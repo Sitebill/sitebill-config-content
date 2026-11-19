@@ -255,6 +255,28 @@ extend type Query {
         @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@adaptation")
 }
 
+"One AI suggestion: the text and, for titles and hashtags, the same result split into items. Nothing is saved."
+type ContentAiResult {
+    text: String!
+    items: [String!]!
+}
+
+input ContentAiInput {
+    "draft | rewrite | adapt | titles | hashtags"
+    action: String! @rules(apply: ["required", "in:draft,rewrite,adapt,titles,hashtags"])
+    project_id: Int! @rules(apply: ["required", "integer"])
+    "Channel for adapt; for the others its format and length limit are taken into account."
+    platform_id: Int @rules(apply: ["nullable", "integer"])
+    title: String @rules(apply: ["nullable", "max:200"])
+    kind: String @rules(apply: ["nullable", "max:40"])
+    rubric: String @rules(apply: ["nullable", "max:80"])
+    "Source text for rewrite / adapt / titles / hashtags."
+    text: String @rules(apply: ["nullable", "max:20000"])
+    "Wishes or theses of the user."
+    instruction: String @rules(apply: ["nullable", "max:1000"])
+    locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"])
+}
+
 extend type Mutation {
     "Adds a user of this site to the team or changes his role."
     contentSaveMember(input: ContentMemberInput!): ContentMember!
@@ -325,4 +347,9 @@ extend type Mutation {
     contentSeedDemo(locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"])): Boolean!
         @guard @can(ability: "content.manage", model: "Tenant")
         @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@seedDemo")
+
+    "AI suggestion for a publication (draft, rewrite, adapt to a channel, titles, hashtags) through the platform AI gateway: the tenant's own key or platform credits. Saves nothing."
+    contentAiGenerate(input: ContentAiInput!): ContentAiResult!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\AiResolver@generate")
 }

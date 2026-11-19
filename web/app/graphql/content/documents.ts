@@ -34,3 +34,6 @@ export const CM_SEED_DEMO = gql`mutation CmSeedDemo($locale: String) { contentSe
 export const CM_SAVE_MEMBER = gql`mutation CmSaveMember($input: ContentMemberInput!) { contentSaveMember(input: $input) { id user_id name email role } }`
 export const CM_REMOVE_MEMBER = gql`mutation CmRemoveMember($user_id: ID!) { contentRemoveMember(user_id: $user_id) }`
 export const CM_USERS_SEARCH = gql`query CmUsersSearch($search: String) { adminUsers(search: $search, first: 10, page: 1) { data { id name email } } }`
+
+export const CM_AI_STATUS = gql`query CmAiStatus { aiStatus { available source } }`
+export const CM_AI_GENERATE = gql`mutation CmAiGenerate($input: ContentAiInput!) { contentAiGenerate(input: $input) { text items } }`

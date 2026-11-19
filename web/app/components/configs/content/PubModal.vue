@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CmPublication, CmPlatform, CmProposal } from '../../../utils/content'
 import {
-  CM_SAVE_PUBLICATION, CM_DELETE_PUBLICATION, CM_DUPLICATE_PUBLICATION, CM_SET_PLACEMENT, CM_ADAPTATION,
+  CM_SAVE_PUBLICATION, CM_DELETE_PUBLICATION, CM_DUPLICATE_PUBLICATION, CM_SET_PLACEMENT, CM_ADAPTATION, CM_AI_GENERATE,
 } from '../../../graphql/content/documents'
 
 /**
@@ -107,6 +107,31 @@ async function adapt(pf: CmPlatform) {
   }
 }
 
+/** Адаптация через ИИ: тот же формат предложения, что у правил, — принимается в связанную версию. */
+async function adaptAi(pf: CmPlatform) {
+  proposalFor.value = pf
+  proposal.value = null
+  try {
+    const res = await ws.mutate(CM_AI_GENERATE, {
+      input: {
+        action: 'adapt', project_id: Number(f.project_id), platform_id: Number(pf.id), title: f.title, kind: f.kind, rubric: f.rubric || null,
+        text: f.body, locale: String(locale.value).slice(0, 2),
+      },
+    })
+    proposal.value = {
+      title: f.title, kind: f.kind, rubric: f.rubric || null, body: res.contentAiGenerate.text, hashtags: f.hashtags || null,
+      planned_date: f.planned_date || null, planned_time: f.planned_time || null, platform_ids: [Number(pf.id)],
+    }
+  } catch (e) {
+    useToast().add({ title: ws.errorText(e), color: 'error' })
+    proposalFor.value = null
+  }
+}
+
+function applyAi(patch: { title?: string; body?: string; hashtags?: string }) {
+  Object.assign(f, patch)
+}
+
 async function acceptProposal() {
   const p = proposal.value!
   const data = await ws.run(CM_SAVE_PUBLICATION, {
@@ -175,6 +200,11 @@ async function acceptProposal() {
           <UFormField :label="t('content.f_assignee')"><input v-model="f.assignee" maxlength="120" :class="CM_FIELD" :disabled="readonly"></UFormField>
         </div>
 
+        <ConfigsContentAiPanel
+          v-if="!readonly" :project-id="Number(f.project_id)" :title="f.title" :kind="f.kind" :rubric="f.rubric" :body="f.body"
+          :platforms="platforms" @apply="applyAi"
+        />
+
         <UFormField :label="`${t('content.f_body')} · ${f.body.length}`">
           <UTextarea v-model="f.body" :rows="8" class="w-full" :disabled="readonly" />
         </UFormField>
@@ -235,6 +265,10 @@ async function acceptProposal() {
         </div>
         <div class="flex flex-wrap gap-2">
           <UButton v-for="pf in platforms" :key="pf.id" size="xs" color="neutral" variant="outline" icon="i-lucide-sparkles" :label="pf.name" @click="adapt(pf)" />
+        </div>
+        <div v-if="f.body.trim()" class="mt-2 flex flex-wrap items-center gap-2">
+          <span class="text-xs text-muted">✨ {{ t('content.ai_adapt_label') }}</span>
+          <UButton v-for="pf in platforms" :key="pf.id" size="xs" variant="soft" icon="i-lucide-wand-sparkles" :label="pf.name" @click="adaptAi(pf)" />
         </div>
         <p v-if="proposalFor && !proposal" class="mt-2 text-sm text-muted">{{ t('content.thinking') }}</p>
         <div v-if="proposal" class="mt-3 space-y-2 rounded-xl border border-dashed border-default bg-elevated/40 p-3">

@@ -1,8 +1,8 @@
 # Content Factory — content plan, editorial calendar and team workflow for Sitebill
 
-**EN** · An open-source **content marketing workspace** for the [Sitebill](https://sitebillcms.com/?utm_source=github&utm_medium=readme&utm_campaign=content-factory) platform: several projects and brands, publishing channels (Telegram, VK, Dzen, vc.ru, Habr, blog, newsletter…), a **content plan** (table + kanban), a **month calendar**, a material library, the **status of every publication on every channel**, a **team with roles** (owner / editor / author / approver / viewer) and a built-in **assistant** that finds gaps in the plan, suggests ideas and drafts a plan for a period. AI generators (drafts, rewrites, channel adaptation, titles, hashtags) are the next stage — see the [roadmap](docs/ROADMAP.md).
+**EN** · An open-source **content marketing workspace** for the [Sitebill](https://sitebillcms.com/?utm_source=github&utm_medium=readme&utm_campaign=content-factory) platform: several projects and brands, publishing channels (Telegram, VK, Dzen, vc.ru, Habr, blog, newsletter…), a **content plan** (table + kanban), a **month calendar**, a material library, the **status of every publication on every channel**, a **team with roles** (owner / editor / author / approver / viewer) and a built-in **assistant** that finds gaps in the plan, suggests ideas and drafts a plan for a period. **AI helper** inside the publication card: write a draft, rewrite, adapt to a channel, suggest titles and hashtags — with your own provider key or the platform model; AI never saves anything by itself. Batch generation and the «factory» are next — see the [roadmap](docs/ROADMAP.md).
 
-**RU** · Открытая **контент-фабрика** для платформы [Sitebill](https://www.sitebill.ru/?utm_source=github&utm_medium=readme&utm_campaign=content-factory): несколько проектов и брендов, площадки (Telegram, ВКонтакте, Дзен, vc.ru, Habr, блог, рассылка…), **контент-план** (таблица и канбан), **календарь на месяц**, библиотека материалов, **статус каждой публикации на каждой площадке**, **команда с ролями** (владелец / редактор / автор / согласующий / наблюдатель) и встроенный **ассистент**: находит дыры в плане, предлагает идеи, составляет план на период. ИИ-генераторы (черновики, переписывание, адаптация под площадку, заголовки, хештеги) — следующий этап, см. [дорожную карту](docs/ROADMAP.md).
+**RU** · Открытая **контент-фабрика** для платформы [Sitebill](https://www.sitebill.ru/?utm_source=github&utm_medium=readme&utm_campaign=content-factory): несколько проектов и брендов, площадки (Telegram, ВКонтакте, Дзен, vc.ru, Habr, блог, рассылка…), **контент-план** (таблица и канбан), **календарь на месяц**, библиотека материалов, **статус каждой публикации на каждой площадке**, **команда с ролями** (владелец / редактор / автор / согласующий / наблюдатель) и встроенный **ассистент**: находит дыры в плане, предлагает идеи, составляет план на период. **ИИ-помощник** в карточке публикации: черновик, переписывание, адаптация под площадку, заголовки и хештеги — на вашем ключе провайдера или модели платформы; сам ничего не сохраняет. Пакетная генерация и «фабрика» — следующий этап, см. [дорожную карту](docs/ROADMAP.md).
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Sitebill](https://img.shields.io/badge/platform-Sitebill-1abc9c.svg)](https://sitebillcms.com/?utm_source=github&utm_medium=readme&utm_campaign=content-factory)
@@ -28,6 +28,7 @@ An alternative to a hand-made Google Sheets / Notion / Trello content calendar t
 | 📅 **Content plan & editorial calendar** | table with filters (sphere, status, placed / not placed, channel, sort), **kanban board** with drag & drop, **month calendar** with drag to another day, «important dates» (birthdays, holidays…) |
 | 📣 **Multi-channel publishing status** | one publication → many channels; each placement has its own status, link and date; the **overall status is calculated** (all done → *Published*, some → *Partly published*) |
 | 👥 **Team workflow** | roles *owner · editor · author · approver · viewer*; an author cannot mark a post *Ready* or *Published* — it goes to **review**, the approver or editor moves it on; rights are enforced on the backend |
+| ✨ **AI helper** | draft, rewrite (improve / shorten / expand / simpler / more formal), adaptation to a channel within its length limit, titles, hashtags; the project card (topic, audience, tone, keywords) is the «brand memory» of every prompt; your key (OpenAI-compatible or Claude) or the platform model; every call is logged, limits apply |
 | 🧠 **Assistant (rules, no external AI)** | plan review (overdue, not prepared in time, stuck in review, not placed everywhere, stale rubrics, empty days, monotony, low completion, weak channels), ideas, a plan for N days, adaptation to a channel |
 | 🗂 **Projects & channels** | topic, audience, tone of voice, keywords, competitors per project; length limit and posts-per-week target per channel |
 | 📚 **Library** | books, diary, notes, audience, ideas, hashtags by topic, cases — «make a publication» in one click |
@@ -40,9 +41,9 @@ An alternative to a hand-made Google Sheets / Notion / Trello content calendar t
 
 ## Status / Статус
 
-Phase 1 of the [roadmap](docs/ROADMAP.md): the backend, the web UI, roles and the assistant work in the Sitebill cloud platform as a **site configuration** (`app_type = content`). AI generators, the platform-credits mode and the self-hosted (Community) build of this configuration are **planned, not released**.
+Phase 1 of the [roadmap](docs/ROADMAP.md): the backend, the web UI, roles and the assistant work in the Sitebill cloud platform as a **site configuration** (`app_type = content`). The AI helper works through the platform AI gateway. Batch generation, the «factory» page, per-tariff limits and the self-hosted (Community) build of this configuration are **planned, not released**.
 
-Фаза 1 из [дорожной карты](docs/ROADMAP.md): бэкенд, веб-интерфейс, роли и ассистент работают в облачной платформе Sitebill как **конфигурация сайта** (`app_type = content`). ИИ-генераторы, режим платформенных кредитов и self-hosted-сборка (Community) этой конфигурации **запланированы, но не выпущены**.
+Фаза 1 из [дорожной карты](docs/ROADMAP.md): бэкенд, веб-интерфейс, роли и ассистент работают в облачной платформе Sitebill как **конфигурация сайта** (`app_type = content`). ИИ-помощник работает через общий ИИ-шлюз платформы. Пакетная генерация, страница «фабрики», лимиты по тарифам и self-hosted-сборка (Community) этой конфигурации **запланированы, но не выпущены**.
 
 ### Try it today / Попробовать сейчас
 
@@ -78,7 +79,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Rights are always checked
 
 ## Roadmap / Что дальше
 
-1. **AI core** — draft, rewrite, adapt to a channel, titles, hashtags through the platform AI gateway: bring your own key (BYOK) or platform credits; a per-project «brand memory».
+1. ~~AI core~~ ✅ draft, rewrite, adapt, titles, hashtags through the platform AI gateway (own key or platform model). Still to do: «golden samples» in the brand memory, per-tariff limits.
 2. **Factory** — ideas, period plan, batch adaptation by queue, approval with comments, an «AI factory» page.
 3. **Community build** — the same configuration as an installable layer of the free self-hosted edition.
 4. **Publishing** — Telegram / Max / VK through the platform messenger core, image generation, reach metrics.

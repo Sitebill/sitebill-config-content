@@ -53,6 +53,12 @@ export function useContentWorkspace() {
     return res.data as T
   }
 
+  /** Мутация без тоста и перезагрузки: для ИИ-предложений, которые ничего не сохраняют. */
+  async function mutate<T = any>(mutation: DocumentNode, variables: Record<string, unknown> = {}): Promise<T> {
+    const res = await apollo.mutate({ mutation, variables })
+    return res.data as T
+  }
+
   async function reload() {
     try {
       const [a, b, c, d, e, r] = await Promise.all([
@@ -103,6 +109,6 @@ export function useContentWorkspace() {
     projects, platforms, pubs, materials, events, role, loading, denied, filter,
     projectById, platformById, scoped, scopedPlatforms, isEmpty,
     canWrite, canMove, canApprove, canManage, canTeam, allowedStatuses,
-    reload, run, query, errorText, seed,
+    reload, run, query, mutate, errorText, seed,
   }
 }

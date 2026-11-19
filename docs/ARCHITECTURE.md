@@ -46,8 +46,14 @@ The platform exposes a generic hook: a configuration registers a resolver in `Ap
 
 ## Assistant
 
-`PlanAgent` is a set of transparent rules (no model call): `review` returns codes plus a short meta string, the UI turns codes into localized text; `ideas`, `planProposal`, `adaptation` produce proposals that a human accepts — the assistant never publishes or edits on its own. AI features will plug into the same endpoints through the platform AI gateway.
+`PlanAgent` is a set of transparent rules (no model call): `review` returns codes plus a short meta string, the UI turns codes into localized text; `ideas`, `planProposal`, `adaptation` produce proposals that a human accepts — the assistant never publishes or edits on its own. 
 
 ## Frontend
 
 State lives in `useContentWorkspace()` (`useState`): the whole workspace (hundreds of publications) is reloaded after each mutation, rules are computed on the server. Pages are wrapped in `Frame.vue` (project filter, loading / denied / empty-demo states, the publication card host).
+
+## AI features
+
+`src/Services/Ai/` — one class per feature (`draft`, `rewrite`, `adapt`, `titles`, `hashtags`) on top of `ContentFeature`, which implements the platform `AiFeature` contract. The resolver (`AiResolver::generate`, mutation `contentAiGenerate`, ability `content.write`) collects the input — the project card as the *brand memory*, the channel (type, formats, length limit), the text and the user's wish — and runs `AiGateway::runFeature`. The gateway picks the source (the tenant's own key → the platform model), applies rate and daily limits and writes the journal (`ai_usage_log`, feature `content.*`).
+
+Rules: the prompt contains only the listed fields (no team comments, assignee, tracked links or other projects); texts are treated as data, not instructions; the result is a suggestion — the UI applies it to the card, nothing is saved automatically; text for a channel is cut at a word boundary if the model exceeds its limit.
