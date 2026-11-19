@@ -86,6 +86,9 @@ final class ContentResolver
     {
         $project = ! empty($args['id']) ? Project::query()->findOrFail($args['id']) : new Project();
         $isNew = ! $project->exists;
+        if ($isNew) {
+            app(\App\Entitlements\TenantEntitlements::class)->assertCanCreate(app('currentTenant'), 'content_projects_max');
+        }
         $project->fill($args['input'])->save();
         if ($isNew) {
             DefaultPlatforms::ensure($project); // Дзен, ВКонтакте, Автор.тудей, Макс, Одноклассники, vc.ru, workspace.ru, TenChat, Looky

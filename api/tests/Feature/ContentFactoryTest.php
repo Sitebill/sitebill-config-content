@@ -8,6 +8,8 @@ use App\Configs\Content\Models\Publication;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 
+require_once __DIR__ . '/../Support.php';
+
 // Фаза 3 («фабрика»): ИИ-идеи и план периода, согласование с комментариями, пакетная адаптация в очереди.
 // Хелперы contentAs/contentMember — из ContentAccessTest; contentAiAdmin/contentAiProject — из ContentAiTest.
 

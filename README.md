@@ -81,7 +81,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Rights are always checked
 
 1. ~~AI core~~ ✅ draft, rewrite, adapt, titles, hashtags through the platform AI gateway (own key or platform model). Still to do: «golden samples» in the brand memory, per-tariff limits.
 2. ~~Factory~~ ✅ AI ideas, AI period plan, batch adaptation by queue, approval with comments. A separate «AI factory» dashboard (queue and history) is still to do.
-3. **Community build** — the same configuration as an installable layer of the free self-hosted edition.
+3. **Community build** ✅ — the configuration ships inside the free self-hosted image as a site profile: `community:install --profile=content` (or `COMMUNITY_PROFILE=content`). Tariff keys `content_projects_max` / `content_members_max` apply on the platform.
 4. **Publishing** — Telegram / Max / VK through the platform messenger core, image generation, reach metrics.
 
 ## Related / Ссылки

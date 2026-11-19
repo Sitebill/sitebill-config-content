@@ -8,39 +8,16 @@ use App\Models\Tenant;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 
+require_once __DIR__ . '/../Support.php';
+
 // ИИ-фичи контент-фабрики: бренд-память в промпте, границы данных, права, лимиты площадки (docs/roadmap/CONTENT_FACTORY.md §6).
 
-const CONTENT_AI_SAVE = 'mutation ($input: AiConnectionInput!) { saveMyAiConnection(input: $input) { status { available } } }';
 const CONTENT_AI = 'mutation ($i: ContentAiInput!) { contentAiGenerate(input: $i) { text items } }';
 
 beforeEach(function () {
     config(['outbound.allow_private_hosts' => ['api.openai.com']]);
     RateLimiter::clear('ai:' . app('currentTenant')->id . ':1');
 });
-
-/** Админ с подключённым ключом OpenAI; ответ модели подменён. */
-function contentAiAdmin(object $test, string $reply): \App\Models\User
-{
-    fakeHttp(['api.openai.com/*' => Http::response([
-        'choices' => [['message' => ['content' => $reply]]],
-        'usage' => ['prompt_tokens' => 100, 'completion_tokens' => 30],
-        'model' => 'gpt-4o-mini',
-    ])]);
-    $admin = createAdminUser();
-    contentAs($test, $admin, CONTENT_AI_SAVE, ['input' => ['provider' => 'openai', 'api_key' => 'sk-test-1234567890abcd', 'model' => 'gpt-4o-mini', 'consent' => true]])
-        ->assertGraphQLErrorFree();
-
-    return $admin;
-}
-
-function contentAiProject(): Project
-{
-    $p = new Project(['name' => 'Студия «Лён»', 'topic' => 'интерьер квартир', 'audience' => 'владельцы квартир', 'tone' => 'спокойный', 'keywords' => 'ремонт, свет', 'competitors' => 'КонкурентХ']);
-    $p->tenant_id = app('currentTenant')->id;
-    $p->save();
-
-    return $p;
-}
 
 test('draft: бренд-память проекта и площадка попадают в промпт, результат чистится и ничего не сохраняется', function () {
     $admin = contentAiAdmin($this, "```\n**Свет** для кухни\n\nТекст поста.\n```");

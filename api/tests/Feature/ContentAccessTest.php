@@ -6,22 +6,9 @@ use App\Configs\Content\Models\Publication;
 use App\Models\Tenant;
 use App\Models\User;
 
+require_once __DIR__ . '/../Support.php';
+
 // Контент-фабрика: роли команды, права на бэкенде и изоляция тенантов (docs/roadmap/CONTENT_FACTORY.md §5).
-
-/** GraphQL под пользователем; graphQL() у тестового класса protected, поэтому вызываем в его контексте. */
-function contentAs(object $test, ?User $user, string $query, array $vars = [])
-{
-    return (fn () => ($user ? $this->actingAs($user, 'web') : $this)->graphQL($query, $vars))->call($test);
-}
-
-/** Пользователь текущего тенанта с ролью в команде. */
-function contentMember(string $role): User
-{
-    $user = User::factory()->create();
-    Member::create(['user_id' => $user->id, 'role' => $role]);
-
-    return $user;
-}
 
 const CONTENT_SAVE_PUB = 'mutation ($i: ContentPublicationInput!) { contentSavePublication(input: $i) { id status } }';
 

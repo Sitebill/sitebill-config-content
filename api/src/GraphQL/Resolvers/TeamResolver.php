@@ -33,6 +33,9 @@ final class TeamResolver
             throw ValidationException::withMessages(['input.user_id' => 'The site admin is always the owner.']);
         }
         $member = Member::query()->where('user_id', $user->id)->first() ?? new Member(['user_id' => $user->id]);
+        if (! $member->exists) {
+            app(\App\Entitlements\TenantEntitlements::class)->assertCanCreate(app('currentTenant'), 'content_members_max');
+        }
         $member->role = $in['role'];
         $member->save();
 
