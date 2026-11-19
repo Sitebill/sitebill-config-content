@@ -3,14 +3,19 @@
 namespace App\Configs\Content\GraphQL\Resolvers;
 
 use App\Ai\AiGateway;
+use App\Configs\Content\Models\Event;
 use App\Configs\Content\Models\Platform;
 use App\Configs\Content\Models\Project;
+use App\Configs\Content\Models\Publication;
 use App\Configs\Content\Services\Ai\AdaptFeature;
 use App\Configs\Content\Services\Ai\ContentFeature;
 use App\Configs\Content\Services\Ai\DraftFeature;
 use App\Configs\Content\Services\Ai\HashtagsFeature;
+use App\Configs\Content\Services\Ai\IdeasFeature;
+use App\Configs\Content\Services\Ai\PeriodPlanFeature;
 use App\Configs\Content\Services\Ai\RewriteFeature;
 use App\Configs\Content\Services\Ai\TitlesFeature;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -70,6 +75,62 @@ final class AiResolver
                 'hashtags' => array_values(array_filter(explode(' ', $text))),
                 default => [],
             },
+        ];
+    }
+
+    /** Идеи публикаций для проекта: предложения без дат и площадок. */
+    public function ideas(mixed $root, array $args): array
+    {
+        $project = $this->project((int) $args['project_id']);
+        $pubs = Publication::query()->where('project_id', $project->id)->orderByDesc('id')->limit(60)->get(['title', 'rubric']);
+
+        $raw = $this->gateway->runFeature(app('currentTenant'), Auth::user(), app(IdeasFeature::class), [
+            'project' => $project->only(['name', 'topic', 'audience', 'tone', 'keywords', 'competitors']),
+            'count' => $args['count'] ?? 6,
+            'existing_titles' => $pubs->pluck('title')->all(),
+            'rubrics' => $pubs->pluck('rubric')->filter()->unique()->values()->all(),
+            'locale' => $args['locale'] ?? app('currentTenant')->default_locale ?? 'ru',
+        ]);
+
+        return array_map(fn (array $r) => $this->proposal($r), json_decode($raw, true) ?: []);
+    }
+
+    /** План на период: предложения с датами и площадками (учитывает частоту по площадкам, занятые дни и важные даты). */
+    public function plan(mixed $root, array $args): array
+    {
+        $project = $this->project((int) $args['project_id']);
+        $from = CarbonImmutable::parse($args['today'] ?? 'today')->startOfDay();
+        $to = $from->addDays(max(3, min(60, (int) ($args['days'] ?? 14))) - 1);
+
+        $platforms = Platform::query()->where('project_id', $project->id)->get(['id', 'name', 'kind', 'per_week'])->map->toArray()->all();
+        $busy = Publication::query()->where('project_id', $project->id)->whereBetween('planned_date', [$from->toDateString(), $to->toDateString()])
+            ->get(['title', 'planned_date'])->map(fn ($p) => ['date' => substr((string) $p->planned_date, 0, 10), 'title' => $p->title])->all();
+        $events = Event::query()->whereBetween('event_date', [$from->toDateString(), $to->toDateString()])
+            ->get(['title', 'event_date'])->map(fn ($e) => ['date' => substr((string) $e->event_date, 0, 10), 'title' => $e->title])->all();
+
+        $raw = $this->gateway->runFeature(app('currentTenant'), Auth::user(), app(PeriodPlanFeature::class), [
+            'project' => $project->only(['name', 'topic', 'audience', 'tone', 'keywords', 'competitors']),
+            'from' => $from->toDateString(), 'to' => $to->toDateString(),
+            'platforms' => $platforms, 'busy' => $busy, 'events' => $events,
+            'locale' => $args['locale'] ?? app('currentTenant')->default_locale ?? 'ru',
+        ]);
+
+        return array_map(fn (array $r) => $this->proposal($r), json_decode($raw, true) ?: []);
+    }
+
+    private function project(int $id): Project
+    {
+        return Project::query()->find($id)
+            ?? throw ValidationException::withMessages(['project_id' => 'Проект не найден.']);
+    }
+
+    /** Предложение в формате ContentProposal (как у ассистента на правилах): принимается тем же кодом интерфейса. */
+    private function proposal(array $r): array
+    {
+        return [
+            'title' => $r['title'], 'kind' => $r['kind'], 'rubric' => $r['rubric'] ?? null, 'body' => $r['hook'] ?: null, 'hashtags' => null,
+            'planned_date' => $r['date'] ?? null, 'planned_time' => $r['time'] ?? null,
+            'platform_ids' => ! empty($r['platform_id']) ? [(int) $r['platform_id']] : [],
         ];
     }
 }

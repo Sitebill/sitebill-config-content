@@ -355,6 +355,19 @@
     "ai_append": "Append to the end",
     "ai_apply": "Apply",
     "ai_check_note": "AI can be wrong: check the facts before publishing.",
-    "ai_adapt_label": "Adapt with AI:"
+    "ai_adapt_label": "Adapt with AI:",
+    "discuss_title": "Discussion and approval",
+    "discuss_empty": "No comments yet.",
+    "discuss_placeholder": "Comment for the team…",
+    "discuss_send": "Send",
+    "discuss_approve": "Approve",
+    "discuss_return": "Send back",
+    "batch_all": "Adapt for all channels",
+    "batch_progress": "Adapted {done} of {total}",
+    "batch_nothing": "Versions for all channels already exist ({n})",
+    "batch_done_hint": "versions were added to the list as drafts",
+    "as_use_ai": "Build with AI (using the project memory)",
+    "discuss_k_approve": "Approved",
+    "discuss_k_return": "Sent back"
   }
 }

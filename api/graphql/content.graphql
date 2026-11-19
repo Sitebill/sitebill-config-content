@@ -204,6 +204,39 @@ input ContentMemberInput {
     role: String! @rules(apply: ["required", "in:editor,author,approver,viewer"])
 }
 
+"A line of the publication feed: a team comment or the decision of an approver."
+type ContentComment {
+    id: ID!
+    publication_id: ID!
+    "comment | approve | return"
+    kind: String!
+    body: String
+    author: String
+    created_at: String!
+}
+
+enum ContentDecision {
+    approve
+    return
+}
+
+
+"Progress of a batch adaptation: one queued job per channel; each creates a linked draft version."
+type ContentBatch {
+    batch_id: String!
+    total: Int!
+    done: Int!
+    "Channels that already had a version and were skipped."
+    skipped: Int!
+    failed: [ContentBatchFailure!]!
+    finished: Boolean!
+}
+
+type ContentBatchFailure {
+    platform_id: Int!
+    error: String!
+}
+
 extend type Query {
     "Role of the current user in the content team: owner | editor | author | approver | viewer."
     contentMyRole: String!
@@ -213,6 +246,15 @@ extend type Query {
     contentMembers: [ContentMember!]!
         @guard @can(ability: "content.team", model: "Tenant")
         @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\TeamResolver@members")
+
+    contentComments(publication_id: ID!): [ContentComment!]!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ReviewResolver@comments")
+
+
+    contentBatch(batch_id: String!): ContentBatch!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\BatchResolver@batch")
 
     contentProjects: [ContentProject!]!
         @guard @can(ability: "content.read", model: "Tenant")
@@ -352,4 +394,29 @@ extend type Mutation {
     contentAiGenerate(input: ContentAiInput!): ContentAiResult!
         @guard @can(ability: "content.write", model: "Tenant")
         @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\AiResolver@generate")
+
+    "AI ideas for a project (titles, formats, rubrics, a short hook). Suggestions only; nothing is saved."
+    contentAiIdeas(project_id: Int! count: Int = 6 @rules(apply: ["integer", "min:1", "max:12"]) locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"])): [ContentProposal!]!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\AiResolver@ideas")
+
+    "AI plan for N days from today: dates, times, channels. Suggestions only; the user accepts them into the plan."
+    contentAiPlan(project_id: Int! days: Int = 14 @rules(apply: ["integer", "min:3", "max:60"]) today: String @rules(apply: ["nullable", "date_format:Y-m-d"]) locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"])): [ContentProposal!]!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\AiResolver@plan")
+
+    "Writes to the publication feed. Roles that can move a publication may comment."
+    contentAddComment(publication_id: ID! body: String! @rules(apply: ["required", "max:2000"])): ContentComment!
+        @guard @can(ability: "content.move", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ReviewResolver@addComment")
+
+    "The approver accepts (-> ready) or returns (-> in work, the comment is required) a publication that is in review."
+    contentDecide(publication_id: ID! decision: ContentDecision! comment: String @rules(apply: ["nullable", "max:2000"])): ContentComment!
+        @guard @can(ability: "content.approve", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ReviewResolver@decide")
+
+    "Adapts a publication to all (or the given) channels of its project through the queue; every result is a linked draft version."
+    contentAiAdaptAll(publication_id: ID! platform_ids: [Int!] locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"])): ContentBatch!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\BatchResolver@adaptAll")
 }

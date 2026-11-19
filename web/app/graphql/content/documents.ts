@@ -37,3 +37,14 @@ export const CM_USERS_SEARCH = gql`query CmUsersSearch($search: String) { adminU
 
 export const CM_AI_STATUS = gql`query CmAiStatus { aiStatus { available source } }`
 export const CM_AI_GENERATE = gql`mutation CmAiGenerate($input: ContentAiInput!) { contentAiGenerate(input: $input) { text items } }`
+
+// Фаза 3: ИИ-идеи и план, обсуждение и согласование, пакетная адаптация.
+const PROPOSAL_FIELDS = 'title kind rubric body hashtags planned_date planned_time platform_ids'
+export const CM_AI_IDEAS = gql`mutation CmAiIdeas($project_id: Int!, $count: Int, $locale: String) { contentAiIdeas(project_id: $project_id, count: $count, locale: $locale) { ${PROPOSAL_FIELDS} } }`
+export const CM_AI_PLAN = gql`mutation CmAiPlan($project_id: Int!, $days: Int, $today: String, $locale: String) { contentAiPlan(project_id: $project_id, days: $days, today: $today, locale: $locale) { ${PROPOSAL_FIELDS} } }`
+export const CM_COMMENTS = gql`query CmComments($publication_id: ID!) { contentComments(publication_id: $publication_id) { id kind body author created_at } }`
+export const CM_ADD_COMMENT = gql`mutation CmAddComment($publication_id: ID!, $body: String!) { contentAddComment(publication_id: $publication_id, body: $body) { id kind body author created_at } }`
+export const CM_DECIDE = gql`mutation CmDecide($publication_id: ID!, $decision: ContentDecision!, $comment: String) { contentDecide(publication_id: $publication_id, decision: $decision, comment: $comment) { id kind body author created_at } }`
+const BATCH_FIELDS = 'batch_id total done skipped finished failed { platform_id error }'
+export const CM_AI_ADAPT_ALL = gql`mutation CmAiAdaptAll($publication_id: ID!) { contentAiAdaptAll(publication_id: $publication_id) { ${BATCH_FIELDS} } }`
+export const CM_BATCH = gql`query CmBatch($batch_id: String!) { contentBatch(batch_id: $batch_id) { ${BATCH_FIELDS} } }`

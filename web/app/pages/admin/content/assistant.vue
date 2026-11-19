@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { CmProposal, CmReviewItem } from '../../../utils/content'
-import { CM_IDEAS, CM_PLAN_PROPOSAL, CM_REVIEW, CM_SAVE_PUBLICATION } from '../../../graphql/content/documents'
+import { CM_IDEAS, CM_PLAN_PROPOSAL, CM_REVIEW, CM_SAVE_PUBLICATION, CM_AI_STATUS, CM_AI_IDEAS, CM_AI_PLAN } from '../../../graphql/content/documents'
 
-// Ассистент: проверка плана, идеи и черновик плана на период. Правила считает бэкенд (PlanAgent),
-// ИИ-генераторы подключатся к этим же точкам в следующих фазах.
+// Ассистент: проверка плана, идеи и черновик плана на период. Если ИИ подключён — идеи и план строит модель
+// (с памятью проекта), иначе правила бэкенда (PlanAgent). Формат предложений один, принимаются одинаково.
 definePageMeta({ layout: 'admin', middleware: ['auth'] })
 
 const { t, locale } = useI18n()
@@ -17,6 +17,11 @@ const proposals = ref<(CmProposal & { saved?: boolean })[]>([])
 const proposalKind = ref<'ideas' | 'plan' | ''>('')
 const busy = ref('')
 const days = ref(14)
+const aiOn = ref(false)
+const useAi = ref(true)
+onMounted(async () => {
+  try { aiOn.value = !!(await ws.query(CM_AI_STATUS)).aiStatus?.available } catch { aiOn.value = false }
+})
 
 async function runReview() {
   busy.value = 'review'
@@ -30,10 +35,20 @@ async function propose(kind: 'ideas' | 'plan') {
   if (!projectId.value) return
   busy.value = kind
   try {
-    const d = kind === 'ideas'
-      ? await ws.query(CM_IDEAS, { project_id: projectId.value, count: 6, locale: lang.value })
-      : await ws.query(CM_PLAN_PROPOSAL, { project_id: projectId.value, days: Number(days.value) || 14, locale: lang.value, today: cmToday() })
-    proposals.value = (kind === 'ideas' ? d.contentIdeas : d.contentPlanProposal).map((p: CmProposal) => ({ ...p }))
+    const ai = aiOn.value && useAi.value
+    let list: CmProposal[]
+    if (ai) {
+      const d = kind === 'ideas'
+        ? await ws.mutate(CM_AI_IDEAS, { project_id: projectId.value, count: 6, locale: lang.value })
+        : await ws.mutate(CM_AI_PLAN, { project_id: projectId.value, days: Number(days.value) || 14, locale: lang.value, today: cmToday() })
+      list = kind === 'ideas' ? d.contentAiIdeas : d.contentAiPlan
+    } else {
+      const d = kind === 'ideas'
+        ? await ws.query(CM_IDEAS, { project_id: projectId.value, count: 6, locale: lang.value })
+        : await ws.query(CM_PLAN_PROPOSAL, { project_id: projectId.value, days: Number(days.value) || 14, locale: lang.value, today: cmToday() })
+      list = kind === 'ideas' ? d.contentIdeas : d.contentPlanProposal
+    }
+    proposals.value = list.map((p: CmProposal) => ({ ...p }))
     proposalKind.value = kind
   } catch (e) { toast.add({ title: ws.errorText(e), color: 'error' }) } finally { busy.value = '' }
 }
@@ -70,6 +85,7 @@ async function acceptAll() {
         <UCard v-if="ws.canWrite.value">
           <h3 class="mb-1 font-semibold text-highlighted">{{ t('content.as_make_title') }}</h3>
           <p class="mb-3 text-sm text-muted">{{ t('content.as_make_hint') }}</p>
+          <label v-if="aiOn" class="mb-3 flex items-center gap-2 text-sm"><input v-model="useAi" type="checkbox"> ✨ {{ t('content.as_use_ai') }}</label>
           <div class="flex flex-wrap items-end gap-2">
             <UButton :loading="busy === 'ideas'" icon="i-lucide-lightbulb" color="neutral" variant="outline" :label="t('content.as_ideas')" @click="propose('ideas')" />
             <span class="flex items-end gap-2">

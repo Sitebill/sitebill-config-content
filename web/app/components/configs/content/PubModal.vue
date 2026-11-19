@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CmPublication, CmPlatform, CmProposal } from '../../../utils/content'
 import {
-  CM_SAVE_PUBLICATION, CM_DELETE_PUBLICATION, CM_DUPLICATE_PUBLICATION, CM_SET_PLACEMENT, CM_ADAPTATION, CM_AI_GENERATE,
+  CM_SAVE_PUBLICATION, CM_DELETE_PUBLICATION, CM_DUPLICATE_PUBLICATION, CM_SET_PLACEMENT, CM_ADAPTATION, CM_AI_GENERATE, CM_AI_ADAPT_ALL, CM_BATCH,
 } from '../../../graphql/content/documents'
 
 /**
@@ -126,6 +126,32 @@ async function adaptAi(pf: CmPlatform) {
     useToast().add({ title: ws.errorText(e), color: 'error' })
     proposalFor.value = null
   }
+}
+
+// Пакетная адаптация: задачи идут в очереди, ход опрашиваем, пока пакет не завершится.
+type Batch = { batch_id: string; total: number; done: number; skipped: number; finished: boolean; failed: { platform_id: number; error: string }[] }
+const batch = ref<Batch | null>(null)
+let batchTimer: ReturnType<typeof setTimeout> | null = null
+onBeforeUnmount(() => { if (batchTimer) clearTimeout(batchTimer) })
+
+async function pollBatch() {
+  if (!batch.value || batch.value.finished) { await ws.reload(); return }
+  batchTimer = setTimeout(async () => {
+    try { batch.value = (await ws.query(CM_BATCH, { batch_id: batch.value!.batch_id })).contentBatch } catch { batch.value = null; return }
+    pollBatch()
+  }, 2000)
+}
+
+async function adaptAll() {
+  try {
+    batch.value = (await ws.mutate(CM_AI_ADAPT_ALL, { publication_id: cur.value!.id })).contentAiAdaptAll
+    pollBatch()
+  } catch (e) { useToast().add({ title: ws.errorText(e), color: 'error' }) }
+}
+
+function onDecided(status: string) {
+  f.status = status
+  if (cur.value) cur.value = { ...cur.value, status }
 }
 
 function applyAi(patch: { title?: string; body?: string; hashtags?: string }) {
@@ -270,6 +296,14 @@ async function acceptProposal() {
           <span class="text-xs text-muted">✨ {{ t('content.ai_adapt_label') }}</span>
           <UButton v-for="pf in platforms" :key="pf.id" size="xs" variant="soft" icon="i-lucide-wand-sparkles" :label="pf.name" @click="adaptAi(pf)" />
         </div>
+        <div v-if="f.body.trim() && platforms.length > 1" class="mt-2 flex flex-wrap items-center gap-2">
+          <UButton size="xs" icon="i-lucide-wand-sparkles" :disabled="!!batch && !batch.finished" :label="t('content.batch_all')" @click="adaptAll" />
+          <span v-if="batch" class="text-xs text-muted">
+            {{ batch.total ? t('content.batch_progress', { done: batch.done, total: batch.total }) : t('content.batch_nothing', { n: batch.skipped }) }}
+            <template v-if="batch.finished && batch.total"> · {{ t('content.batch_done_hint') }}</template>
+          </span>
+          <p v-for="e in batch?.failed || []" :key="e.platform_id" class="w-full text-xs text-error">{{ ws.platformById.value.get(Number(e.platform_id))?.name }}: {{ e.error }}</p>
+        </div>
         <p v-if="proposalFor && !proposal" class="mt-2 text-sm text-muted">{{ t('content.thinking') }}</p>
         <div v-if="proposal" class="mt-3 space-y-2 rounded-xl border border-dashed border-default bg-elevated/40 p-3">
           <b class="block text-highlighted">{{ proposalFor?.name }} — {{ proposal.title }}</b>
@@ -280,6 +314,8 @@ async function acceptProposal() {
           </div>
         </div>
       </section>
+
+      <ConfigsContentDiscussion v-if="cur" :publication-id="cur.id" :status="cur.status" @decided="onDecided" />
 
       <section v-if="versions.length" class="mt-6">
         <b class="text-highlighted">{{ t('content.versions') }}</b>
