@@ -1,0 +1,328 @@
+"A brand or a client the content is made for (configs/content)."
+type ContentProject {
+    id: ID!
+    name: String!
+    description: String
+    topic: String
+    audience: String
+    tone: String
+    "Comma separated."
+    keywords: String
+    competitors: String
+    manager: String
+    color: String!
+}
+
+"A channel the project publishes to. Can be added by hand when the channel has no API."
+type ContentPlatform {
+    id: ID!
+    project_id: Int!
+    name: String!
+    "telegram | vk | dzen | ok | tiktok | youtube | rutube | habr | vcru | site | blog | email | avtor_today | max | workspace | tenchat | looky | other"
+    kind: String!
+    url: String
+    audience: String
+    formats: String
+    "Maximum text length of the channel, if it has one."
+    max_length: Int
+    per_week: Int
+    "manual | connected"
+    api_status: String!
+}
+
+"The state of one publication on one channel."
+type ContentPlacement {
+    id: ID!
+    platform_id: Int!
+    "todo | in_work | scheduled | published | skipped"
+    status: String!
+    "Y-m-d H:i:s"
+    published_at: String
+    url: String
+    comment: String
+}
+
+type ContentPublication {
+    id: ID!
+    project_id: Int!
+    "Set when this text is an adaptation of another publication."
+    parent_id: Int
+    title: String!
+    "post | article | news | case | video | announcement"
+    kind: String!
+    rubric: String
+    "work | art | other"
+    sphere: String!
+    "none | idea | draft | in_work | review | ready | published"
+    status: String!
+    "low | normal | high"
+    priority: String!
+    "Y-m-d"
+    planned_date: String
+    "H:i"
+    planned_time: String
+    body: String
+    hashtags: String
+    link: String
+    assignee: String
+    comment: String
+    placements: [ContentPlacement!]!
+    "Computed from the placements: none | pending | partial | done"
+    placement_state: String!
+}
+
+type ContentMaterial {
+    id: ID!
+    project_id: Int
+    "book | diary | note | audience | idea | hashtags | case"
+    kind: String!
+    "Y-m-d"
+    entry_date: String
+    "book: read | planned | best; note: todo | done"
+    state: String
+    "audience and hashtags: work | art"
+    sphere: String
+    "book: author; hashtags: topic"
+    topic: String
+    title: String!
+    body: String
+    tags: String
+}
+
+"An important date of the owner: birthday, holiday, doctor appointment, other."
+type ContentEvent {
+    id: ID!
+    "birthday | holiday | doctor | other"
+    kind: String!
+    title: String!
+    "Y-m-d"
+    event_date: String!
+    "H:i"
+    event_time: String
+    comment: String
+}
+
+"A finding of the plan review. The client turns `code` and `meta` into text."
+type ContentReviewItem {
+    "overdue | unprepared | review | unplaced | stale_rubric | empty_days | monotony | low_plan | weak_channel"
+    code: String!
+    "info | warn | bad"
+    severity: String!
+    publication_id: Int
+    "Short machine readable detail, e.g. a title, a rubric or a number."
+    meta: String
+}
+
+"A proposal of the assistant. Nothing is saved until the owner accepts it."
+type ContentProposal {
+    title: String!
+    kind: String!
+    rubric: String
+    body: String
+    hashtags: String
+    planned_date: String
+    planned_time: String
+    platform_ids: [Int!]!
+}
+
+input ContentProjectInput {
+    name: String! @rules(apply: ["required", "max:120"])
+    description: String @rules(apply: ["nullable", "max:2000"])
+    topic: String @rules(apply: ["nullable", "max:200"])
+    audience: String @rules(apply: ["nullable", "max:1000"])
+    tone: String @rules(apply: ["nullable", "max:200"])
+    keywords: String @rules(apply: ["nullable", "max:300"])
+    competitors: String @rules(apply: ["nullable", "max:300"])
+    manager: String @rules(apply: ["nullable", "max:120"])
+    color: String @rules(apply: ["nullable", "max:20"])
+}
+
+input ContentPlatformInput {
+    project_id: Int! @rules(apply: ["required", "integer"])
+    name: String! @rules(apply: ["required", "max:120"])
+    kind: String! @rules(apply: ["required", "in:telegram,vk,dzen,ok,tiktok,youtube,rutube,habr,vcru,site,blog,email,avtor_today,max,workspace,tenchat,looky,other"])
+    url: String @rules(apply: ["nullable", "url", "max:300"])
+    audience: String @rules(apply: ["nullable", "max:300"])
+    formats: String @rules(apply: ["nullable", "max:200"])
+    max_length: Int @rules(apply: ["nullable", "integer", "min:1", "max:1000000"])
+    per_week: Int @rules(apply: ["nullable", "integer", "min:0", "max:100"])
+    api_status: String @rules(apply: ["nullable", "in:manual,connected"])
+}
+
+input ContentPublicationInput {
+    project_id: Int! @rules(apply: ["required", "integer"])
+    parent_id: Int @rules(apply: ["nullable", "integer"])
+    title: String! @rules(apply: ["required", "max:200"])
+    kind: String @rules(apply: ["nullable", "in:post,article,news,case,video,announcement"])
+    rubric: String @rules(apply: ["nullable", "max:80"])
+    sphere: String @rules(apply: ["nullable", "in:work,art,other"])
+    status: String @rules(apply: ["nullable", "in:none,idea,draft,in_work,review,ready,published"])
+    priority: String @rules(apply: ["nullable", "in:low,normal,high"])
+    planned_date: String @rules(apply: ["nullable", "date_format:Y-m-d"])
+    planned_time: String @rules(apply: ["nullable", "date_format:H:i"])
+    body: String @rules(apply: ["nullable", "max:100000"])
+    hashtags: String @rules(apply: ["nullable", "max:300"])
+    link: String @rules(apply: ["nullable", "max:500"])
+    assignee: String @rules(apply: ["nullable", "max:120"])
+    comment: String @rules(apply: ["nullable", "max:2000"])
+    "Channels to publish to; missing placements are created, removed ones are deleted only when not yet published."
+    platform_ids: [Int!]
+}
+
+input ContentEventInput {
+    kind: String! @rules(apply: ["required", "in:birthday,holiday,doctor,other"])
+    title: String! @rules(apply: ["required", "max:200"])
+    event_date: String! @rules(apply: ["required", "date_format:Y-m-d"])
+    event_time: String @rules(apply: ["nullable", "date_format:H:i"])
+    comment: String @rules(apply: ["nullable", "max:2000"])
+}
+
+input ContentMaterialInput {
+    project_id: Int @rules(apply: ["nullable", "integer"])
+    kind: String! @rules(apply: ["required", "in:book,diary,note,audience,idea,hashtags,case"])
+    entry_date: String @rules(apply: ["nullable", "date_format:Y-m-d"])
+    state: String @rules(apply: ["nullable", "in:read,planned,best,todo,done"])
+    sphere: String @rules(apply: ["nullable", "in:work,art"])
+    topic: String @rules(apply: ["nullable", "max:160"])
+    title: String! @rules(apply: ["required", "max:200"])
+    body: String @rules(apply: ["nullable", "max:50000"])
+    tags: String @rules(apply: ["nullable", "max:200"])
+}
+
+"A member of the content team. The site admin is always the owner and is not listed here."
+type ContentMember {
+    id: ID!
+    user_id: ID!
+    name: String!
+    email: String
+    "editor | author | approver | viewer"
+    role: String!
+}
+
+input ContentMemberInput {
+    user_id: ID! @rules(apply: ["required", "integer"])
+    role: String! @rules(apply: ["required", "in:editor,author,approver,viewer"])
+}
+
+extend type Query {
+    "Role of the current user in the content team: owner | editor | author | approver | viewer."
+    contentMyRole: String!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\TeamResolver@myRole")
+
+    contentMembers: [ContentMember!]!
+        @guard @can(ability: "content.team", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\TeamResolver@members")
+
+    contentProjects: [ContentProject!]!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@projects")
+
+    contentPlatforms: [ContentPlatform!]!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@platforms")
+
+    contentPublications(project_id: Int limit: Int = 2000): [ContentPublication!]!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@publications")
+
+    contentEvents: [ContentEvent!]!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@events")
+
+    contentMaterials(project_id: Int): [ContentMaterial!]!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@materials")
+
+    "Findings of the plan review (overdue, unprepared, waiting for approval, not placed everywhere, empty days...)."
+    contentReview(project_id: Int today: String @rules(apply: ["nullable", "date_format:Y-m-d"])): [ContentReviewItem!]!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@review")
+
+    "Ideas for new publications built from the project card, its rubrics and its history."
+    contentIdeas(project_id: Int! count: Int = 6 @rules(apply: ["integer", "between:1,20"]) locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"])): [ContentProposal!]!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@ideas")
+
+    "A plan for the next days spread over the channels of the project by their frequency."
+    contentPlanProposal(project_id: Int! days: Int = 7 @rules(apply: ["integer", "between:1,31"]) locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"]) today: String @rules(apply: ["nullable", "date_format:Y-m-d"])): [ContentProposal!]!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@planProposal")
+
+    "A version of the publication adapted to the limits and the style of one channel."
+    contentAdaptation(publication_id: ID! platform_id: Int! locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"])): ContentProposal!
+        @guard @can(ability: "content.read", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@adaptation")
+}
+
+extend type Mutation {
+    "Adds a user of this site to the team or changes his role."
+    contentSaveMember(input: ContentMemberInput!): ContentMember!
+        @guard @can(ability: "content.team", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\TeamResolver@saveMember")
+
+    contentRemoveMember(user_id: ID!): Boolean!
+        @guard @can(ability: "content.team", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\TeamResolver@removeMember")
+
+    contentSaveProject(id: ID input: ContentProjectInput!): ContentProject!
+        @guard @can(ability: "content.manage", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@saveProject")
+
+    "Deletes the project with its channels, publications and placements."
+    contentDeleteProject(id: ID!): Boolean!
+        @guard @can(ability: "content.manage", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@deleteProject")
+
+    contentSavePlatform(id: ID input: ContentPlatformInput!): ContentPlatform!
+        @guard @can(ability: "content.manage", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@savePlatform")
+
+    contentDeletePlatform(id: ID!): Boolean!
+        @guard @can(ability: "content.manage", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@deletePlatform")
+
+    contentSavePublication(id: ID input: ContentPublicationInput!): ContentPublication!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@savePublication")
+
+    contentDeletePublication(id: ID!): Boolean!
+        @guard @can(ability: "content.manage", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@deletePublication")
+
+    "Quick edits from the board and the calendar: a new status and/or a new date."
+    contentMovePublication(id: ID! status: String @rules(apply: ["nullable", "in:none,idea,draft,in_work,review,ready,published"]) planned_date: String @rules(apply: ["nullable", "date_format:Y-m-d"])): ContentPublication!
+        @guard @can(ability: "content.move", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@movePublication")
+
+    "Marks the publication as placed (or not) on one channel; the overall status is recalculated."
+    contentSetPlacement(publication_id: ID! platform_id: Int! status: String! @rules(apply: ["required", "in:todo,in_work,scheduled,published,skipped"]) url: String @rules(apply: ["nullable", "url", "max:500"]) comment: String @rules(apply: ["nullable", "max:300"])): ContentPublication!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@setPlacement")
+
+    "A new version of a publication: the copy keeps a link to the source."
+    contentDuplicatePublication(id: ID!): ContentPublication!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@duplicatePublication")
+
+    contentSaveEvent(id: ID input: ContentEventInput!): ContentEvent!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@saveEvent")
+
+    contentDeleteEvent(id: ID!): Boolean!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@deleteEvent")
+
+    contentSaveMaterial(id: ID input: ContentMaterialInput!): ContentMaterial!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@saveMaterial")
+
+    contentDeleteMaterial(id: ID!): Boolean!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@deleteMaterial")
+
+    "Fills an empty workspace with two sample projects. Returns false when data already exists."
+    contentSeedDemo(locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"])): Boolean!
+        @guard @can(ability: "content.manage", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\ContentResolver@seedDemo")
+}
