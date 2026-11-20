@@ -38,7 +38,7 @@ const full = (title: string) => !parts.value.includes(title) && [...parts.value,
     </div>
     <p v-else class="text-sm text-muted">
       {{ t('content.audience_empty') }}
-      <NuxtLink to="/admin/content/library" class="text-primary hover:underline">{{ t('content.audience_open_library') }}</NuxtLink>
+      <NuxtLink to="/admin/content/audiences" class="text-primary hover:underline">{{ t('content.audience_open_library') }}</NuxtLink>
     </p>
     <div v-if="custom.length" class="flex flex-wrap items-center gap-1.5 text-xs text-muted">
       <span>{{ t('content.audience_custom') }}:</span>

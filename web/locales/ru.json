@@ -374,9 +374,11 @@
     "pub_need_title": "Укажите название публикации.",
     "modal_expand": "Развернуть на весь экран",
     "modal_collapse": "Свернуть",
-    "audience_empty": "В библиотеке пока нет целевых аудиторий.",
-    "audience_open_library": "Добавить в библиотеке",
+    "audience_empty": "В разделе «Целевые аудитории» пока ничего нет.",
+    "audience_open_library": "Добавить в разделе «Целевые аудитории»",
     "audience_custom": "Свои",
-    "audience_remove": "Убрать"
+    "audience_remove": "Убрать",
+    "nav_audiences": "Целевые аудитории",
+    "audiences_empty": "В списке пока нет целевых аудиторий."
   }
 }

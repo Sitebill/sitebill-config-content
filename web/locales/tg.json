@@ -374,9 +374,11 @@
     "pub_need_title": "Номи нашрро ворид кунед.",
     "modal_expand": "Ба тамоми экран калон кардан",
     "modal_collapse": "Хурд кардан",
-    "audience_empty": "Дар китобхона ҳоло аудиторияи ҳадаф нест.",
-    "audience_open_library": "Дар китобхона илова кунед",
+    "audience_empty": "Бахши «Аудиторияи ҳадаф» холӣ аст.",
+    "audience_open_library": "Дар бахши «Аудиторияи ҳадаф» илова кунед",
     "audience_custom": "Шахсӣ",
-    "audience_remove": "Хориҷ кардан"
+    "audience_remove": "Хориҷ кардан",
+    "nav_audiences": "Аудиторияи ҳадаф",
+    "audiences_empty": "Ҳоло аудиторияи ҳадаф нест."
   }
 }

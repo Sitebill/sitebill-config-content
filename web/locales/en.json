@@ -374,9 +374,11 @@
     "pub_need_title": "Enter a publication title.",
     "modal_expand": "Expand to full screen",
     "modal_collapse": "Collapse",
-    "audience_empty": "There are no target audiences in the library yet.",
-    "audience_open_library": "Add in the library",
+    "audience_empty": "The “Target audiences” section is empty.",
+    "audience_open_library": "Add in “Target audiences”",
     "audience_custom": "Custom",
-    "audience_remove": "Remove"
+    "audience_remove": "Remove",
+    "nav_audiences": "Target audiences",
+    "audiences_empty": "No target audiences yet."
   }
 }

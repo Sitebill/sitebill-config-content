@@ -2,7 +2,7 @@
 import type { CmMaterial } from '../../../utils/content'
 import { CM_DELETE_MATERIAL, CM_SAVE_MATERIAL } from '../../../graphql/content/documents'
 
-// Библиотека: книги, дневник, заметки, аудитория, идеи, хештеги и кейсы.
+// Библиотека: книги, дневник, заметки, идеи, хештеги и кейсы. Целевые аудитории вынесены в свой раздел (audiences.vue).
 definePageMeta({ layout: 'admin', middleware: ['auth'] })
 
 const { t, locale } = useI18n()
@@ -10,7 +10,9 @@ const ws = useContentWorkspace()
 const toast = useToast()
 const { confirmDialog } = useConfirmDialog()
 
+const KINDS = CM_MATERIAL_KINDS.filter(k => k !== 'audience')
 const filter = useState('cm-lib-filter', () => ({ q: '', kind: 'book', sub: '' }))
+if (!KINDS.includes(filter.value.kind as any)) filter.value = { ...filter.value, kind: 'book', sub: '' }
 const editing = ref<{ kind: string; item: CmMaterial | null } | null>(null)
 
 /** Подфильтр вкладки: у книг и заметок это статус, у аудитории и хештегов — сфера. */
@@ -54,7 +56,7 @@ const bookColor = (s?: string | null) => s === 'best' ? '#f59e0b' : s === 'read'
 
     <template #default="{ openPub }">
       <div class="mb-3 flex flex-wrap gap-1 rounded-xl bg-elevated p-0.5">
-        <button v-for="k in CM_MATERIAL_KINDS" :key="k" type="button" class="rounded-lg px-3 py-1 text-sm font-semibold" :class="filter.kind === k ? 'bg-default shadow-sm' : 'text-muted'" @click="setKind(k)">
+        <button v-for="k in KINDS" :key="k" type="button" class="rounded-lg px-3 py-1 text-sm font-semibold" :class="filter.kind === k ? 'bg-default shadow-sm' : 'text-muted'" @click="setKind(k)">
           {{ CM_MATERIAL_ICON[k] }} {{ t('content.mkind_' + k) }}
         </button>
       </div>

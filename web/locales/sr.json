@@ -374,9 +374,11 @@
     "pub_need_title": "Unesite naziv publikacije.",
     "modal_expand": "Proširi na ceo ekran",
     "modal_collapse": "Skupi",
-    "audience_empty": "U biblioteci još nema ciljnih publika.",
-    "audience_open_library": "Dodaj u biblioteci",
+    "audience_empty": "Odeljak „Ciljne publike“ je prazan.",
+    "audience_open_library": "Dodaj u „Ciljne publike“",
     "audience_custom": "Sopstvene",
-    "audience_remove": "Ukloni"
+    "audience_remove": "Ukloni",
+    "nav_audiences": "Ciljne publike",
+    "audiences_empty": "Još nema ciljnih publika."
   }
 }
