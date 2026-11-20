@@ -3,6 +3,7 @@
 namespace App\Configs\Content\Services\Ai;
 
 use App\Ai\Features\AiFeature;
+use App\Configs\Content\Models\Material;
 use App\Models\Tenant;
 
 /**
@@ -79,12 +80,34 @@ abstract class ContentFeature implements AiFeature
         $lines = [];
         foreach ($labels as $key => $label) {
             $v = trim((string) ($project[$key] ?? ''));
+            if ($key === 'audience') {
+                $v = $this->audienceWithDescriptions($v);
+            }
             if ($v !== '') {
                 $lines[] = "{$label}: " . mb_substr($v, 0, 500);
             }
         }
 
         return $lines ? "О ПРОЕКТЕ:\n" . implode("\n", $lines) : '';
+    }
+
+    /**
+     * Аудитория выбирается из библиотеки и хранится названиями через «; »: для записей, найденных в библиотеке,
+     * добавляем краткое описание (markdown убираем) — модели нужен портрет, а не только ярлык.
+     */
+    private function audienceWithDescriptions(string $value): string
+    {
+        $parts = array_values(array_filter(array_map('trim', explode(';', $value))));
+        if (! $parts) {
+            return $value;
+        }
+        $bodies = Material::query()->where('kind', 'audience')->whereIn('title', $parts)->pluck('body', 'title');
+
+        return implode('; ', array_map(function (string $p) use ($bodies) {
+            $body = trim(preg_replace('/[#>*_`~\[\]]|\s+/u', ' ', (string) ($bodies[$p] ?? '')));
+
+            return $body !== '' ? $p . ' (' . mb_substr($body, 0, 160) . ')' : $p;
+        }, $parts));
     }
 
     protected function postBlock(array $input): string

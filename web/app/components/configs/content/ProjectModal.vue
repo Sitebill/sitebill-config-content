@@ -33,7 +33,7 @@ async function submit() {
           <UFormField :label="t('content.f_topic')"><UInput v-model="f.topic" class="w-full" maxlength="200" /></UFormField>
           <UFormField :label="t('content.f_manager')"><UInput v-model="f.manager" class="w-full" maxlength="120" /></UFormField>
         </div>
-        <UFormField :label="t('content.f_audience')"><UInput v-model="f.audience" class="w-full" maxlength="1000" /></UFormField>
+        <UFormField :label="t('content.f_audience')"><ConfigsContentAudiencePicker v-model="f.audience" :max="1000" /></UFormField>
         <div class="grid gap-3 sm:grid-cols-2">
           <UFormField :label="t('content.f_tone')"><UInput v-model="f.tone" class="w-full" maxlength="200" /></UFormField>
           <UFormField :label="t('content.f_keywords')"><UInput v-model="f.keywords" class="w-full" maxlength="300" /></UFormField>

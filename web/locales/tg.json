@@ -373,6 +373,10 @@
     "pub_need_project": "Аввал дар бахши «Лоиҳаҳо ва майдонҳо» лоиҳа эҷод кунед.",
     "pub_need_title": "Номи нашрро ворид кунед.",
     "modal_expand": "Ба тамоми экран калон кардан",
-    "modal_collapse": "Хурд кардан"
+    "modal_collapse": "Хурд кардан",
+    "audience_empty": "Дар китобхона ҳоло аудиторияи ҳадаф нест.",
+    "audience_open_library": "Дар китобхона илова кунед",
+    "audience_custom": "Шахсӣ",
+    "audience_remove": "Хориҷ кардан"
   }
 }

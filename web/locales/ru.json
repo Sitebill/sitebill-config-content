@@ -373,6 +373,10 @@
     "pub_need_project": "Сначала создайте проект в разделе «Проекты и площадки».",
     "pub_need_title": "Укажите название публикации.",
     "modal_expand": "Развернуть на весь экран",
-    "modal_collapse": "Свернуть"
+    "modal_collapse": "Свернуть",
+    "audience_empty": "В библиотеке пока нет целевых аудиторий.",
+    "audience_open_library": "Добавить в библиотеке",
+    "audience_custom": "Свои",
+    "audience_remove": "Убрать"
   }
 }

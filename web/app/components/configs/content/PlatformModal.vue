@@ -37,7 +37,7 @@ async function submit() {
           </UFormField>
         </div>
         <UFormField :label="t('content.f_url')"><input v-model="f.url" type="url" maxlength="300" placeholder="https://" :class="CM_FIELD"></UFormField>
-        <UFormField :label="t('content.f_audience')"><UInput v-model="f.audience" class="w-full" maxlength="300" /></UFormField>
+        <UFormField :label="t('content.f_audience')"><ConfigsContentAudiencePicker v-model="f.audience" :max="300" /></UFormField>
         <UFormField :label="t('content.f_formats')"><UInput v-model="f.formats" class="w-full" maxlength="200" /></UFormField>
         <div class="grid gap-3 sm:grid-cols-2">
           <UFormField :label="t('content.f_max_length')"><input v-model="f.max_length" type="number" min="1" :class="CM_FIELD"></UFormField>

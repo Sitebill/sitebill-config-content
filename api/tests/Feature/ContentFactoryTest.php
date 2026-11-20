@@ -179,3 +179,20 @@ test('пакет: ошибка модели по площадке попадае
     \App\Models\TenantAiConnection::query()->delete();
     contentAs($this, contentMember('author'), FACTORY_BATCH, ['id' => $pub->id])->assertGraphQLErrorMessage('ИИ не подключён. Укажите API-ключ провайдера в настройках (раздел «ИИ») или обратитесь к администратору платформы.');
 });
+
+test('аудитория из библиотеки: в бренд-память идут название и описание, своё значение остаётся как есть', function () {
+    $admin = contentAiAdmin($this, 'Текст.');
+    $project = contentAiProject();
+    $project->update(['audience' => 'Работа: владельцы квартир; Своя аудитория']);
+    $m = new \App\Configs\Content\Models\Material(['kind' => 'audience', 'title' => 'Работа: владельцы квартир', 'body' => "## Портрет\n\n**28–45 лет**, делают ремонт"]);
+    $m->tenant_id = $project->tenant_id;
+    $m->save();
+
+    contentAs($this, $admin, 'mutation ($i: ContentAiInput!) { contentAiGenerate(input: $i) { text } }', ['i' => ['action' => 'draft', 'project_id' => $project->id, 'title' => 'Т']])->assertGraphQLErrorFree();
+
+    Http::assertSent(function ($r) {
+        $body = json_encode($r->data(), JSON_UNESCAPED_UNICODE);
+
+        return str_contains($body, 'Работа: владельцы квартир (') && str_contains($body, '28–45 лет') && str_contains($body, 'Своя аудитория') && ! str_contains($body, '**');
+    });
+});

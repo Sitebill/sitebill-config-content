@@ -373,6 +373,10 @@
     "pub_need_project": "Prvo napravite projekat u odeljku „Projekti i kanali“.",
     "pub_need_title": "Unesite naziv publikacije.",
     "modal_expand": "Proširi na ceo ekran",
-    "modal_collapse": "Skupi"
+    "modal_collapse": "Skupi",
+    "audience_empty": "U biblioteci još nema ciljnih publika.",
+    "audience_open_library": "Dodaj u biblioteci",
+    "audience_custom": "Sopstvene",
+    "audience_remove": "Ukloni"
   }
 }

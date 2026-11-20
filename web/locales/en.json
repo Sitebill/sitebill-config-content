@@ -373,6 +373,10 @@
     "pub_need_project": "Create a project in “Projects and channels” first.",
     "pub_need_title": "Enter a publication title.",
     "modal_expand": "Expand to full screen",
-    "modal_collapse": "Collapse"
+    "modal_collapse": "Collapse",
+    "audience_empty": "There are no target audiences in the library yet.",
+    "audience_open_library": "Add in the library",
+    "audience_custom": "Custom",
+    "audience_remove": "Remove"
   }
 }
