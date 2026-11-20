@@ -175,8 +175,7 @@ async function acceptProposal() {
 </script>
 
 <template>
-  <UModal :open="true" :title="cur ? t('content.pub_edit') : t('content.pub_new')" :ui="{ content: 'max-w-3xl' }" @update:open="(v: boolean) => !v && emit('close')">
-    <template #body>
+  <ConfigsContentExpandableModal :title="cur ? t('content.pub_edit') : t('content.pub_new')" max-width="max-w-3xl" @close="emit('close')">
       <form class="space-y-4" @submit.prevent="save">
         <p v-if="parent" class="text-sm text-muted">
           ↳ {{ t('content.version_of') }}
@@ -323,6 +322,5 @@ async function acceptProposal() {
         <b class="text-highlighted">{{ t('content.versions') }}</b>
         <ConfigsContentPubRow v-for="v in versions" :key="v.id" :pub="v" />
       </section>
-    </template>
-  </UModal>
+  </ConfigsContentExpandableModal>
 </template>

@@ -371,6 +371,8 @@
     "discuss_k_return": "Vraćeno na doradu",
     "ai_need_project": "Prvo napravite projekat u odeljku „Projekti i kanali“: AI se oslanja na njegovu temu i ton.",
     "pub_need_project": "Prvo napravite projekat u odeljku „Projekti i kanali“.",
-    "pub_need_title": "Unesite naziv publikacije."
+    "pub_need_title": "Unesite naziv publikacije.",
+    "modal_expand": "Proširi na ceo ekran",
+    "modal_collapse": "Skupi"
   }
 }

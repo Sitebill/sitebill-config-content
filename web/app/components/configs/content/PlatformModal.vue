@@ -25,8 +25,7 @@ async function submit() {
 </script>
 
 <template>
-  <UModal :open="true" :title="it.id ? t('content.channel_edit') : t('content.channel_new')" @update:open="(v: boolean) => !v && emit('close')">
-    <template #body>
+  <ConfigsContentExpandableModal :title="it.id ? t('content.channel_edit') : t('content.channel_new')" @close="emit('close')">
       <form class="space-y-4" @submit.prevent="submit">
         <UFormField :label="t('content.f_name')" required><UInput v-model="f.name" class="w-full" maxlength="120" /></UFormField>
         <div class="grid gap-3 sm:grid-cols-2">
@@ -49,6 +48,5 @@ async function submit() {
           <UButton color="neutral" variant="outline" :label="t('content.cancel')" @click="emit('close')" />
         </div>
       </form>
-    </template>
-  </UModal>
+  </ConfigsContentExpandableModal>
 </template>

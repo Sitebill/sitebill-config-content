@@ -30,8 +30,7 @@ async function submit() {
 </script>
 
 <template>
-  <UModal :open="true" :title="CM_MATERIAL_ICON[kind] + ' ' + t(it.id ? 'content.ed_' + kind : 'content.new_' + kind)" @update:open="(v: boolean) => !v && emit('close')">
-    <template #body>
+  <ConfigsContentExpandableModal :title="CM_MATERIAL_ICON[kind] + ' ' + t(it.id ? 'content.ed_' + kind : 'content.new_' + kind)" @close="emit('close')">
       <form class="space-y-4" @submit.prevent="submit">
         <UFormField :label="t('content.lf_title_' + kind)" :required="kind !== 'diary'"><UInput v-model="f.title" class="w-full" maxlength="200" /></UFormField>
         <div class="grid gap-3 sm:grid-cols-2">
@@ -54,6 +53,5 @@ async function submit() {
           <UButton color="neutral" variant="outline" :label="t('content.cancel')" @click="emit('close')" />
         </div>
       </form>
-    </template>
-  </UModal>
+  </ConfigsContentExpandableModal>
 </template>

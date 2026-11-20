@@ -25,8 +25,7 @@ async function submit() {
 </script>
 
 <template>
-  <UModal :open="true" :title="it.id ? t('content.project_edit') : t('content.project_new')" :ui="{ content: 'max-w-2xl' }" @update:open="(v: boolean) => !v && emit('close')">
-    <template #body>
+  <ConfigsContentExpandableModal :title="it.id ? t('content.project_edit') : t('content.project_new')" max-width="max-w-2xl" @close="emit('close')">
       <form class="space-y-4" @submit.prevent="submit">
         <UFormField :label="t('content.f_name')" required><UInput v-model="f.name" class="w-full" maxlength="120" /></UFormField>
         <UFormField :label="t('content.f_description')"><UTextarea v-model="f.description" :rows="3" class="w-full" /></UFormField>
@@ -50,6 +49,5 @@ async function submit() {
           <UButton color="neutral" variant="outline" :label="t('content.cancel')" @click="emit('close')" />
         </div>
       </form>
-    </template>
-  </UModal>
+  </ConfigsContentExpandableModal>
 </template>

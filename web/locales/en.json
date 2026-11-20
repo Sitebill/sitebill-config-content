@@ -371,6 +371,8 @@
     "discuss_k_return": "Sent back",
     "ai_need_project": "Create a project in “Projects and channels” first: the AI relies on its topic and tone.",
     "pub_need_project": "Create a project in “Projects and channels” first.",
-    "pub_need_title": "Enter a publication title."
+    "pub_need_title": "Enter a publication title.",
+    "modal_expand": "Expand to full screen",
+    "modal_collapse": "Collapse"
   }
 }

@@ -29,8 +29,7 @@ async function remove() {
 </script>
 
 <template>
-  <UModal :open="true" :title="it.id ? t('content.event_edit') : t('content.event_new')" @update:open="(v: boolean) => !v && emit('close')">
-    <template #body>
+  <ConfigsContentExpandableModal :title="it.id ? t('content.event_edit') : t('content.event_new')" @close="emit('close')">
       <form class="space-y-4" @submit.prevent="submit">
         <div class="flex flex-wrap gap-1 rounded-xl bg-elevated p-0.5">
           <button v-for="k in CM_EVENT_KINDS" :key="k" type="button" class="rounded-lg px-3 py-1 text-sm font-semibold" :class="f.kind === k ? 'bg-default shadow-sm' : 'text-muted'" @click="f.kind = k">
@@ -50,6 +49,5 @@ async function remove() {
           <UButton v-if="it.id" color="error" variant="ghost" :label="t('content.delete')" @click="remove" />
         </div>
       </form>
-    </template>
-  </UModal>
+  </ConfigsContentExpandableModal>
 </template>
