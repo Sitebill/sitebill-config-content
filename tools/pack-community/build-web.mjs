@@ -24,6 +24,10 @@ const vue = (await load('@vitejs/plugin-vue')).default
 const AutoImport = (await load('unplugin-auto-import/vite')).default
 const Components = (await load('unplugin-vue-components/vite')).default
 
+const gqlNamesFile = path.join(path.dirname(outDir), 'gql-names.json')
+if (!fs.existsSync(gqlNamesFile)) throw new Error('build-web: нет gql-names.json — сначала build-api.mjs')
+const gqlNames = JSON.parse(fs.readFileSync(gqlNamesFile, 'utf8'))
+
 const slash = p => p.replace(/\\/g, '/')
 const work = path.join(here, '.build/work')
 fs.mkdirSync(work, { recursive: true })
@@ -88,6 +92,15 @@ await build({
     ],
   },
   plugins: [
+    // Имена GraphQL приложения свои (Cm*/cm*, см. build-api.mjs): правим запросы интерфейса до компиляции SFC.
+    {
+      name: 'app-gql-names',
+      enforce: 'pre',
+      transform(code, id) {
+        if (!slash(id).toLowerCase().startsWith(slash(webApp).toLowerCase())) return null
+        return code.replace(/\b(?:Content|content)[A-Z]\w*\b/g, m => gqlNames[m] ?? m)
+      },
+    },
     vue(),
     AutoImport({
       imports: ['vue', { [shimNuxt]: ['useI18n', 'useState', 'useToast', 'useConfirmDialog', 'definePageMeta', 'useSeoMeta', 'useHead', 'useGqlClient', 'useRoute', 'useRouter', 'useLocalePath', 'useAuthStore'] }],

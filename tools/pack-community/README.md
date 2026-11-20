@@ -1,32 +1,46 @@
-# pack-community — прототип сборки приложения Community из конфига
+# pack-community — сборка приложения Community из конфига
 
-Цель (docs/roadmap/CONTENT_FACTORY.md §8): выпускать `rumantic.content-manager` ≥ 1.2.0 из этого же конфига, а не вести второй код.
-
-## Что сделано (web)
-
-`build-web.mjs` компилирует SFC конфига в один ESM-бандл (`app.mjs`, ≈160 КБ, ≈36 КБ gzip), который рантайм приложений
-грузит без сборки (общий Vue хоста, контракт `host`):
-
-- Vite + `@vitejs/plugin-vue`, `vue` подменяется на `globalThis.__SB_HOST__.vue`;
-- авто-импорты Nuxt (`useI18n`, `useState`, `useToast`, `useGqlClient`, `useRoute`…) заменены слоем `shim/nuxt.mjs` поверх `host`;
-- `gql` из Apollo — строки (`shim/apollo.mjs`), `host.gql` разбирает их сам;
-- компоненты Nuxt UI: берутся у хоста (`host.components`), недостающие (`UFormField`, `NuxtLink`, `UEditor` → textarea) — `shim/components.mjs`;
-- страницы с динамическим путём: `audiences/[id]` → `audiences?id=` (рантайм сопоставляет страницы по точному пути), ссылки `/admin/content/…` переводятся в `/admin/x/<id>/…`;
-- `smoke.mjs` монтирует все страницы и виджеты в jsdom с поддельным `host` и проверяет конструктор болей.
+Выпускает `rumantic.content-manager` ≥ 1.2.0 из этого же конфига, а не ведёт второй код (docs/roadmap/CONTENT_FACTORY.md §8).
 
 ```bash
-node tools/pack-community/build-web.mjs     # → tools/pack-community/.build/web/app.mjs
-node tools/pack-community/smoke.mjs         # jsdom: страницы и виджеты монтируются без ошибок
+node tools/pack-community/pack.mjs [--version 1.2.0]   # → .build/app/ (готовый каталог пакета)
+# затем официальной проверкой и упаковкой из SDK:
+cd tools/pack-community/.build/app && node <repo>/packages/app-sdk/js/bin/sitebill-app.mjs pack --out ../dist --php <php8.4>
 ```
 
-Зависимости берутся из `apps/web/node_modules` монорепозитория (vite 8, plugin-vue, unplugin-auto-import, unplugin-vue-components, jsdom).
+Зависимости (vite, plugin-vue, unplugin-*, tailwind, jsdom) берутся из `apps/web/node_modules` монорепозитория.
+Пакет без скриншотов ≈ 130 КБ — влезает в лимит портала (~1 МБ на запрос).
 
-## Чего ещё нет (до выпуска пакета)
+## Из чего собирается
 
-1. **Backend.** `api/src` завязан на ядро: `AiGateway` (ИИ), `Tenant`, роли команды (`ContentAccess`, `ConfigMemberRoles`), очереди, MCP-реестр, лимиты тарифа. Host API приложений этого не даёт. Нужно решение: какие части входят в приложение (без ИИ и команды?) или расширение Host API (AI-шлюз).
-2. **Схема GraphQL и `@can`**: способности `content.*` определяет провайдер конфига; в приложении нужны свои.
-3. **Миграции и данные 1.1.0 → 1.2.0**: таблицы приложения `app_rumantic_content_manager_*` отличаются от `content_*`; нужна эволюционная миграция, а не `create`.
-4. **CSS.** Утилиты Tailwind из SFC попадут в стили сайта только если они уже есть в сборке хоста; нужен собственный CSS приложения (компиляция Tailwind при упаковке) — не проверено в браузере.
-5. **Локали**: `content.*` → плоские файлы `locales/<loc>.json` пакета (не сделано).
-6. **Проверка в реальном хосте** (`artisan apps install`, браузер); богатый редактор заменён обычным полем.
-7. **Core**: в `useAppHost` добавлен `navigate` (переход через роутер) — нужен для ссылок между страницами приложения; релиз Community должен идти с ним (`requires.host`).
+| Шаг | Скрипт | Что делает |
+|---|---|---|
+| api | `build-api.mjs` | копирует `api/src` конфига в пространство имён `SitebillApps\Rumantic\ContentManager`, правилами заменяет связи с ядром (модели → `AppModel`, таблицы → `app_rumantic_content_manager_*`, ИИ-исключение, лимиты тарифа убраны), поверх кладёт `overlay/api/` |
+| схема | там же | схема без команды; имена GraphQL приложения свои (`Content*`→`Cm*`, `content*`→`cm*`), способности Gate — `cm.*`: конфиг `content` всегда загружен в той же схеме, пересекаться нельзя. Карта имён — `.build/gql-names.json`, её применяет `build-web` |
+| web | `build-web.mjs` | SFC → один ESM (`web/app.mjs`), `vue` — у хоста, авто-импорты Nuxt заменены слоем `shim/` поверх `host` |
+| css | `build-css.mjs` | Tailwind (как у `apps/web`, тема Nuxt UI) просматривает SFC и отдаёт только слой utilities (≈26 КБ); `pack.mjs` вставляет его в `app.mjs` как `<style>` |
+| локали | `pack.mjs` | `web/locales/*.json` (`content.*`) → плоские `locales/<loc>.json` |
+| manifest | `pack.mjs` | id, `requires.host >=1.2`, shell (home `ContentHome`, дашборд `ContentDashboard`), меню и страницы |
+
+`build-api.mjs` падает, если правило не сработало (исходник конфига изменился) или в коде остались `App\…`, MCP, лимиты, роли команды.
+
+## Оверлеи (`overlay/api/`)
+
+- `Support/AiGateway.php`, `AiFeature.php` — тот же `runFeature`, но поверх `Host::ai()` (ключ владельца/модель платформы, лимиты и журнал — у хоста; фича пишется как `app.rumantic.content-manager.<key>`);
+- `Support/ContentAccess.php` — права = администратор сайта (`Host::users()->isAdmin`), способности `cm.*`;
+- `GraphQL/Resolvers/TeamResolver.php` — только `cmMyRole`, команды в приложении нет;
+- `Jobs/AdaptPublicationJob.php` — очередь внутри `Host::site()->runAs()`;
+- `Models/User.php` — имя автора комментария; `ContentManagerServiceProvider.php` — Gate;
+- `database/migrations/` — схема с нуля, без внешних ключей на таблицы хоста.
+
+## Проверка
+
+- `smoke.mjs` — jsdom: страницы и виджеты монтируются без ошибок;
+- стенд Community без Docker: `python tools/devpanel/stand.py reset --profile blank`, затем `artisan apps install <пакет>` с окружением стенда (`EDITION=community`, `DB_DATABASE=community_wizard`, `APPS_DIR=.local-community-apps`);
+  проверено 2026-11-20: главная, план, аудитории, демо-данные, `cmAiPrompt`, ошибка ИИ без ключа, фоновая адаптация (`AdaptPublicationJob`).
+
+## Что осталось
+
+- Требует Host API 1.2 (`Host::ai()`, `Host::users()`, `host.navigate`): Community должен выйти с ними раньше, чем приложение попадёт в каталог.
+- Богатый редактор заменён обычным полем; команда, MCP и демо-профиль в приложение не входят.
+- Предыдущие версии приложения (1.0.0/1.1.0) с таблицами `app_rumantic_content_manager_*` другой схемы несовместимы: миграция «с нуля», данных 1.1.0 в Community пока нет.
