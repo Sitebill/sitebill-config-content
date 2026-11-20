@@ -411,6 +411,12 @@
     "pub_pains": "Pains the text answers",
     "pub_pains_empty": "This audience has no pains yet.",
     "pub_pains_edit": "Fill in on the audience page",
-    "open": "Open"
+    "open": "Open",
+    "ai_prompt_mode": "Prompt only (no generation)",
+    "ai_prompt_copy": "Copy prompt",
+    "ai_prompt_copied": "Prompt copied",
+    "ai_prompt_copy_failed": "Could not copy, select the text manually",
+    "ai_prompt_hint": "Paste it into any chatbot: the project brand memory, audience pains and your wishes are already inside.",
+    "ai_prompt_still": "You can still get a prompt for another chatbot."
   }
 }

@@ -36,6 +36,7 @@ export const CM_REMOVE_MEMBER = gql`mutation CmRemoveMember($user_id: ID!) { con
 export const CM_USERS_SEARCH = gql`query CmUsersSearch($search: String) { adminUsers(search: $search, first: 10, page: 1) { data { id name email } } }`
 
 export const CM_AI_STATUS = gql`query CmAiStatus { aiStatus { available source } }`
+export const CM_AI_PROMPT = gql`mutation CmAiPrompt($input: ContentAiInput!) { contentAiPrompt(input: $input) }`
 export const CM_AI_GENERATE = gql`mutation CmAiGenerate($input: ContentAiInput!) { contentAiGenerate(input: $input) { text items } }`
 
 // Фаза 3: ИИ-идеи и план, обсуждение и согласование, пакетная адаптация.

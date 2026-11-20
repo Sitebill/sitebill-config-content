@@ -241,3 +241,22 @@ test('боли аудитории: сохраняются JSON-ом, у публ
     ]])->assertGraphQLErrorFree()->json('data.contentSavePublication');
     expect($cleared['audience_id'])->toBeNull()->and($cleared['pain_ids'])->toBe([]);
 });
+
+test('готовый промпт: без вызова модели и без подключённого ИИ, с бренд-памятью и болями', function () {
+    fakeHttp(['*' => Http::response([], 500)]);
+    $admin = createAdminUser();
+    $project = contentAiProject();
+    $m = new \App\Configs\Content\Models\Material(['kind' => 'audience', 'title' => 'Риелторы', 'pains' => [['id' => 's1', 'title' => 'Раздел', 'pains' => [['id' => 'p1', 'title' => 'Нет клиентов', 'description' => 'Ждут рекомендаций']], 'questions' => []]]]);
+    $m->tenant_id = $project->tenant_id;
+    $m->save();
+
+    $p = contentAs($this, $admin, 'mutation ($i: ContentAiInput!) { contentAiPrompt(input: $i) }', ['i' => [
+        'action' => 'draft', 'project_id' => $project->id, 'title' => 'Заголовок', 'instruction' => 'Про свет', 'audience_id' => $m->id, 'pain_ids' => ['p1'],
+    ]])->assertGraphQLErrorFree()->json('data.contentAiPrompt');
+
+    expect($p)->toContain('О ПРОЕКТЕ')->toContain('Нет клиентов')->toContain('Про свет')->toContain('---');
+    Http::assertNothingSent();
+
+    // как и в генерации, переписать без текста нельзя
+    contentAs($this, $admin, 'mutation ($i: ContentAiInput!) { contentAiPrompt(input: $i) }', ['i' => ['action' => 'rewrite', 'project_id' => $project->id]])->assertJsonPath('errors.0.message', fn ($m) => $m !== null);
+});

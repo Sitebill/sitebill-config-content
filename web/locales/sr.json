@@ -411,6 +411,12 @@
     "pub_pains": "Problemi koje tekst rešava",
     "pub_pains_empty": "Ova publika još nema problema.",
     "pub_pains_edit": "Popunite na stranici publike",
-    "open": "Otvori"
+    "open": "Otvori",
+    "ai_prompt_mode": "Samo prompt (bez generisanja)",
+    "ai_prompt_copy": "Kopiraj prompt",
+    "ai_prompt_copied": "Prompt je kopiran",
+    "ai_prompt_copy_failed": "Kopiranje nije uspelo, označite tekst ručno",
+    "ai_prompt_hint": "Nalepite u bilo koji čet-bot: memorija brenda, problemi publike i vaše želje su već unutra.",
+    "ai_prompt_still": "Prompt za drugi čet-bot možete dobiti i ovako."
   }
 }

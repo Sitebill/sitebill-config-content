@@ -407,6 +407,11 @@ extend type Mutation {
         @guard @can(ability: "content.write", model: "Tenant")
         @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\AiResolver@generate")
 
+    "The ready prompt of an AI action (brand memory, audience pains, wishes) as text to copy into any chatbot. Calls no model, spends nothing."
+    contentAiPrompt(input: ContentAiInput!): String!
+        @guard @can(ability: "content.write", model: "Tenant")
+        @field(resolver: "App\\Configs\\Content\\GraphQL\\Resolvers\\AiResolver@prompt")
+
     "AI ideas for a project (titles, formats, rubrics, a short hook). Suggestions only; nothing is saved."
     contentAiIdeas(project_id: Int! count: Int = 6 @rules(apply: ["integer", "min:1", "max:12"]) locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"])): [ContentProposal!]!
         @guard @can(ability: "content.write", model: "Tenant")

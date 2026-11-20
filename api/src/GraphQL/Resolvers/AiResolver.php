@@ -40,7 +40,34 @@ final class AiResolver
 
     public function generate(mixed $root, array $args): array
     {
-        $in = $args['input'];
+        [$feature, $input, $action] = $this->prepare($args['input']);
+        $text = $this->gateway->runFeature(app('currentTenant'), Auth::user(), $feature, $input);
+
+        return [
+            'text' => $text,
+            'items' => match ($action) {
+                'titles' => TitlesFeature::lines($text, 8),
+                'hashtags' => array_values(array_filter(explode(' ', $text))),
+                default => [],
+            },
+        ];
+    }
+
+    /**
+     * Готовый промпт для другого чат-бота: ровно те сообщения, которые ушли бы модели, но без вызова модели —
+     * бесплатно и без подключённого ИИ.
+     */
+    public function prompt(mixed $root, array $args): string
+    {
+        [$feature, $input] = $this->prepare($args['input']);
+        $m = $feature->buildMessages($input, app('currentTenant'));
+
+        return trim($m[0]['content']) . "\n\n---\n\n" . trim($m[1]['content']);
+    }
+
+    /** Проверка входа и сборка данных фичи: общая для генерации и для «только промпт». */
+    private function prepare(array $in): array
+    {
         $action = (string) $in['action'];
 
         // Текстовые действия без текста бессмысленны: понятная ошибка вместо пустого запроса к модели.
@@ -68,16 +95,7 @@ final class AiResolver
             'locale' => $in['locale'] ?? app('currentTenant')->default_locale ?? 'ru',
         ];
 
-        $text = $this->gateway->runFeature(app('currentTenant'), Auth::user(), $feature, $input);
-
-        return [
-            'text' => $text,
-            'items' => match ($action) {
-                'titles' => TitlesFeature::lines($text, 8),
-                'hashtags' => array_values(array_filter(explode(' ', $text))),
-                default => [],
-            },
-        ];
+        return [$feature, $input, $action];
     }
 
     /** Идеи публикаций для проекта: предложения без дат и площадок. */

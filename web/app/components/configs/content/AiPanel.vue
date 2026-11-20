@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { CmPlatform } from '../../../utils/content'
-import { CM_AI_GENERATE, CM_AI_STATUS } from '../../../graphql/content/documents'
+import { CM_AI_GENERATE, CM_AI_PROMPT, CM_AI_STATUS } from '../../../graphql/content/documents'
 
 /**
  * ИИ-помощник в карточке публикации: черновик, улучшение, заголовки, хештеги. Ничего не сохраняет сам — результат
@@ -27,6 +27,9 @@ const instruction = ref('')
 const platformId = ref('')
 const rewriteMode = ref('improve')
 const busy = ref('')
+// Режим «только промпт»: кнопки собирают готовый промпт для другого чат-бота, модель не вызывается. Без подключённого ИИ он единственный.
+const promptOnly = ref(false)
+const asPrompt = computed(() => promptOnly.value || (!!status.value && !status.value.available))
 const result = ref<{ action: string; text: string; items: string[] } | null>(null)
 
 onMounted(async () => {
@@ -43,7 +46,7 @@ async function run(action: 'draft' | 'rewrite' | 'titles' | 'hashtags') {
   result.value = null
   try {
     const wish = action === 'rewrite' ? [t('content.ai_mode_' + rewriteMode.value), instruction.value].filter(Boolean).join('. ') : instruction.value
-    const res = await ws.mutate(CM_AI_GENERATE, {
+    const res = await ws.mutate(asPrompt.value ? CM_AI_PROMPT : CM_AI_GENERATE, {
       input: {
         action, project_id: props.projectId, platform_id: platformId.value ? Number(platformId.value) : null,
         title: props.title || null, kind: props.kind || null, rubric: props.rubric || null,
@@ -51,7 +54,7 @@ async function run(action: 'draft' | 'rewrite' | 'titles' | 'hashtags') {
         audience_id: props.audienceId || null, pain_ids: props.audienceId ? props.painIds || [] : [],
       },
     })
-    result.value = { action, ...res.contentAiGenerate }
+    result.value = asPrompt.value ? { action: 'prompt', text: res.contentAiPrompt, items: [] } : { action, ...res.contentAiGenerate }
   } catch (e) {
     useToast().add({ title: ws.errorText(e), color: 'error' })
   } finally {
@@ -66,6 +69,14 @@ function applyText(mode: 'replace' | 'append') {
   emit('apply', { body: mode === 'replace' || !props.body ? text : `${props.body}\n\n${text}` })
   result.value = null
 }
+async function copyPrompt() {
+  try {
+    await navigator.clipboard.writeText(result.value!.text)
+    useToast().add({ title: t('content.ai_prompt_copied'), color: 'success' })
+  } catch {
+    useToast().add({ title: t('content.ai_prompt_copy_failed'), color: 'warning' })
+  }
+}
 function applyTitle(title: string) { emit('apply', { title }); result.value = null }
 function applyHashtags() { emit('apply', { hashtags: result.value!.items.join(' ') }); result.value = null }
 </script>
@@ -77,12 +88,16 @@ function applyHashtags() { emit('apply', { hashtags: result.value!.items.join(' 
       <span v-if="status?.available" class="text-xs text-muted">{{ t('content.ai_source_' + (status.source === 'platform' ? 'platform' : 'own')) }}</span>
     </div>
 
-    <p v-if="status && !status.available" class="text-sm text-muted">
+    <p v-if="status && !status.available" class="mb-2 text-sm text-muted">
       {{ t('content.ai_unavailable') }}
       <NuxtLink v-if="ws.canTeam.value" to="/admin/settings" class="text-primary hover:underline">{{ t('content.ai_settings_link') }}</NuxtLink>
+      {{ t('content.ai_prompt_still') }}
     </p>
 
-    <template v-else-if="status?.available">
+    <template v-if="status">
+      <label v-if="status.available" class="mb-2 inline-flex cursor-pointer select-none items-center gap-2 text-sm">
+        <input v-model="promptOnly" type="checkbox"> {{ t('content.ai_prompt_mode') }}
+      </label>
       <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_180px]">
         <input v-model="instruction" maxlength="500" :class="CM_FIELD" :placeholder="t('content.ai_instruction_ph')">
         <select v-model="platformId" :class="CM_FIELD" :title="t('content.ai_for_channel')">
@@ -113,13 +128,17 @@ function applyHashtags() { emit('apply', { hashtags: result.value!.items.join(' 
         </template>
         <template v-else>
           <pre class="max-h-56 overflow-auto whitespace-pre-wrap font-sans text-sm">{{ result.text }}</pre>
-          <div class="flex flex-wrap gap-2">
+          <div v-if="result.action === 'prompt'" class="flex flex-wrap items-center gap-2">
+            <UButton size="xs" icon="i-lucide-copy" :label="t('content.ai_prompt_copy')" @click="copyPrompt" />
+            <span class="text-xs text-muted">{{ t('content.ai_prompt_hint') }}</span>
+          </div>
+          <div v-else class="flex flex-wrap gap-2">
             <UButton size="xs" :label="t('content.ai_replace')" @click="applyText('replace')" />
             <UButton v-if="body" size="xs" color="neutral" variant="outline" :label="t('content.ai_append')" @click="applyText('append')" />
           </div>
         </template>
         <div class="flex items-center gap-3 text-xs text-muted">
-          <span>{{ t('content.ai_check_note') }}</span>
+          <span v-if="result.action !== 'prompt'">{{ t('content.ai_check_note') }}</span>
           <button type="button" class="hover:underline" @click="result = null">{{ t('content.cancel') }}</button>
         </div>
       </div>
