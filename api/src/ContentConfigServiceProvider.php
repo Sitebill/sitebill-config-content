@@ -6,6 +6,7 @@ use App\Configs\Content\Support\ContentAccess;
 use App\Configs\Content\Models\Member;
 use App\Configs\Content\Models\Project;
 use App\Entitlements\EntitlementCatalog;
+use App\Mcp\McpToolRegistry;
 use App\Models\Tenant;
 use App\Support\ConfigMemberRoles;
 use Illuminate\Support\Facades\Schema;
@@ -27,6 +28,16 @@ class ContentConfigServiceProvider extends ServiceProvider
         ConfigMemberRoles::register(fn ($user) => app()->bound('currentTenant') && app('currentTenant')->app_type === 'content'
             ? ContentAccess::roleOf($user)
             : null);
+
+        // MCP: tools контент-фабрики на общем /mcp платформы. Видимость каждого решает он сам: токен участника команды,
+        // тенант с app_type content и право роли (Mcp\Concerns\ContentMcpAccess).
+        McpToolRegistry::register(
+            Mcp\Tools\ContentOverview::class, Mcp\Tools\ListPublications::class, Mcp\Tools\GetPublication::class,
+            Mcp\Tools\ListMaterials::class, Mcp\Tools\GetMaterial::class, Mcp\Tools\PlanReview::class, Mcp\Tools\BuildPrompt::class,
+            Mcp\Tools\SavePublication::class, Mcp\Tools\MovePublication::class, Mcp\Tools\SetPlacement::class,
+            Mcp\Tools\AddComment::class, Mcp\Tools\DecidePublication::class, Mcp\Tools\SaveMaterial::class,
+            Mcp\Tools\SaveProject::class, Mcp\Tools\SavePlatform::class,
+        );
 
         // Способности для @can(ability: "content.*") в схеме: без model Lighthouse вызывает Gate::check(ability).
         foreach (ContentAccess::abilities() as $ability) {

@@ -32,6 +32,7 @@ An alternative to a hand-made Google Sheets / Notion / Trello content calendar t
 | 🧠 **Assistant (rules, no external AI)** | plan review (overdue, not prepared in time, stuck in review, not placed everywhere, stale rubrics, empty days, monotony, low completion, weak channels), ideas, a plan for N days, adaptation to a channel |
 | 🗂 **Projects & channels** | topic, audience, tone of voice, keywords, competitors per project; length limit and posts-per-week target per channel |
 | 📚 **Library** | books, diary, notes, audience, ideas, hashtags by topic, cases — «make a publication» in one click |
+| 🔌 **MCP for AI agents** | 15 tools on the platform's `/mcp` endpoint: overview with brand memory, plan and library reading, writing and moving publications, audiences with pains, comments and approval; visibility follows the team role, see [docs/MCP.md](docs/MCP.md) |
 | 🌍 **4 languages** | ru · en · sr · tg (the last two are machine translations — native review welcome) |
 | 🏢 **Multi-tenant** | every row carries `tenant_id`, models are scoped automatically; each site on the platform has its own isolated workspace |
 
