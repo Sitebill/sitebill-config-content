@@ -270,3 +270,26 @@ test('черновик: хештеги отделяются от текста и
 
     expect($r['text'])->toBe("Первый абзац.\n\nВторой абзац.")->and($r['items'])->toBe(['#ремонт', '#дизайн_интерьера', '#свет']);
 });
+
+test('демо-данные: у каждой аудитории есть боли, публикации ссылаются на существующие боли своей аудитории', function () {
+    $admin = createAdminUser();
+    contentAs($this, $admin, 'mutation { contentSeedDemo(locale: "ru") }')->assertGraphQLErrorFree();
+
+    $auds = \App\Configs\Content\Models\Material::query()->where('kind', 'audience')->get();
+    expect($auds)->toHaveCount(3);
+    foreach ($auds as $a) {
+        expect(\App\Configs\Content\Services\AudiencePains::painIds($a->pains))->not->toBeEmpty();
+    }
+    // аудитория проекта в карточке совпадает с названием из библиотеки — выбор в форме её находит
+    foreach (\App\Configs\Content\Models\Project::query()->pluck('audience') as $name) {
+        expect($auds->pluck('title')->all())->toContain($name);
+    }
+    $linked = 0;
+    foreach (\App\Configs\Content\Models\Publication::query()->get() as $p) {
+        expect($p->audience_id)->not->toBeNull();
+        $valid = \App\Configs\Content\Services\AudiencePains::painIds($auds->firstWhere('id', $p->audience_id)->pains);
+        expect(array_diff($p->pain_ids ?? [], $valid))->toBe([]);
+        $linked += count($p->pain_ids ?? []);
+    }
+    expect($linked)->toBeGreaterThan(15);
+});
