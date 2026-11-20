@@ -34,7 +34,9 @@ onMounted(async () => {
 const REWRITE_MODES = ['improve', 'shorten', 'expand', 'lighter', 'formal'] as const
 
 async function run(action: 'draft' | 'rewrite' | 'titles' | 'hashtags') {
-  if (!props.projectId || busy.value) return
+  if (busy.value) return
+  // Без проекта ИИ не знает бренд-память: раньше кнопка молча ничего не делала.
+  if (!props.projectId) { useToast().add({ title: t('content.ai_need_project'), color: 'warning' }); return }
   busy.value = action
   result.value = null
   try {

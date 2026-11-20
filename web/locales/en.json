@@ -368,6 +368,9 @@
     "batch_done_hint": "versions were added to the list as drafts",
     "as_use_ai": "Build with AI (using the project memory)",
     "discuss_k_approve": "Approved",
-    "discuss_k_return": "Sent back"
+    "discuss_k_return": "Sent back",
+    "ai_need_project": "Create a project in “Projects and channels” first: the AI relies on its topic and tone.",
+    "pub_need_project": "Create a project in “Projects and channels” first.",
+    "pub_need_title": "Enter a publication title."
   }
 }

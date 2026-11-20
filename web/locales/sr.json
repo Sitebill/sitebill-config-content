@@ -368,6 +368,9 @@
     "batch_done_hint": "verzije su dodate na listu kao nacrti",
     "as_use_ai": "Izradi uz AI (uz memoriju projekta)",
     "discuss_k_approve": "Odobreno",
-    "discuss_k_return": "Vraćeno na doradu"
+    "discuss_k_return": "Vraćeno na doradu",
+    "ai_need_project": "Prvo napravite projekat u odeljku „Projekti i kanali“: AI se oslanja na njegovu temu i ton.",
+    "pub_need_project": "Prvo napravite projekat u odeljku „Projekti i kanali“.",
+    "pub_need_title": "Unesite naziv publikacije."
   }
 }

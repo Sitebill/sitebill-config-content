@@ -66,7 +66,9 @@ function adopt(p: CmPublication) {
 }
 
 async function save() {
-  if (!f.title.trim() || !f.project_id || readonly.value) return
+  if (readonly.value) return
+  if (!f.project_id) { useToast().add({ title: t('content.pub_need_project'), color: 'warning' }); return }
+  if (!f.title.trim()) { useToast().add({ title: t('content.pub_need_title'), color: 'warning' }); return }
   busy.value = true
   const data = await ws.run(CM_SAVE_PUBLICATION, { id: cur.value?.id || null, input: input() })
   busy.value = false
