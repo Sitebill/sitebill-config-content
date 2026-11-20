@@ -14,6 +14,10 @@ final class ContentManagerServiceProvider extends AppServiceProvider
 {
     protected function bootApp(): void
     {
+        if ($this->app->runningInConsole()) {
+            $this->commands([Console\SeedDemoCommand::class]);
+        }
+
         foreach (ContentAccess::abilities() as $ability) {
             Gate::define($ability, fn ($user) => ContentAccess::can($user, $ability));
         }
