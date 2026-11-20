@@ -30,7 +30,7 @@ const items: EditorToolbarItem[][] = [
   <UEditor
     v-model="model" content-type="markdown" :editable="!props.disabled" :placeholder="props.placeholder"
     class="cm-rich overflow-y-auto rounded-md border border-default" :class="props.compact ? 'min-h-24 max-h-64' : 'min-h-48 max-h-[28rem]'"
-    :ui="{ content: 'px-3 py-2 text-sm' }"
+    :ui="{ base: 'px-3 py-2 sm:px-3 text-sm *:my-2 [&_p]:leading-6 [&_h2]:text-xl [&_h3]:text-lg' }"
   >
     <template #default="{ editor }">
       <UEditorToolbar v-if="!props.disabled" :editor="editor" :items="items" class="sticky top-0 z-10 flex-wrap border-b border-default bg-default px-2 py-1" />
