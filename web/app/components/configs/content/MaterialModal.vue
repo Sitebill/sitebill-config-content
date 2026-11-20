@@ -47,7 +47,7 @@ async function submit() {
         </div>
         <UFormField v-if="kind === 'book'" :label="t('content.f_author')"><UInput v-model="f.topic" class="w-full" maxlength="160" /></UFormField>
         <UFormField v-if="kind === 'hashtags'" :label="t('content.f_hashtag_topic')"><UInput v-model="f.topic" class="w-full" maxlength="160" /></UFormField>
-        <UFormField :label="t('content.lf_body_' + kind)" :required="kind === 'diary'"><UTextarea v-model="f.body" :rows="7" class="w-full" /></UFormField>
+        <UFormField :label="t('content.lf_body_' + kind)" :required="kind === 'diary'"><ConfigsContentRichText v-model="f.body" /></UFormField>
         <div class="flex gap-2">
           <UButton type="submit" :label="t('content.save')" />
           <UButton color="neutral" variant="outline" :label="t('content.cancel')" @click="emit('close')" />

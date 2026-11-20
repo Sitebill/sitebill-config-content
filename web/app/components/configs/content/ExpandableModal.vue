@@ -15,7 +15,7 @@ function toggle() {
   try { sessionStorage.setItem(KEY, expanded.value ? '1' : '0') } catch { /* не критично */ }
 }
 // В развёрнутом виде поля текста тянутся по высоте экрана.
-const ui = computed(() => ({ content: expanded.value ? '[&_textarea]:!min-h-[45vh]' : props.maxWidth }))
+const ui = computed(() => ({ content: expanded.value ? '[&_textarea]:!min-h-[45vh] [&_.cm-rich]:!min-h-[55vh] [&_.cm-rich]:!max-h-none' : props.maxWidth }))
 </script>
 
 <template>

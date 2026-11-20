@@ -41,7 +41,7 @@ async function remove() {
           <UFormField :label="t('content.ef_date_' + f.kind)" required><input v-model="f.event_date" type="date" required :class="CM_FIELD"></UFormField>
           <UFormField v-if="withTime" :label="t('content.f_time')"><input v-model="f.event_time" type="time" :class="CM_FIELD"></UFormField>
         </div>
-        <UFormField :label="t('content.f_comment')"><UTextarea v-model="f.comment" :rows="3" class="w-full" /></UFormField>
+        <UFormField :label="t('content.f_comment')"><ConfigsContentRichText v-model="f.comment" compact /></UFormField>
         <div class="flex items-center gap-2">
           <UButton type="submit" :label="t('content.save')" />
           <UButton color="neutral" variant="outline" :label="t('content.cancel')" @click="emit('close')" />

@@ -28,7 +28,7 @@ async function submit() {
   <ConfigsContentExpandableModal :title="it.id ? t('content.project_edit') : t('content.project_new')" max-width="max-w-2xl" @close="emit('close')">
       <form class="space-y-4" @submit.prevent="submit">
         <UFormField :label="t('content.f_name')" required><UInput v-model="f.name" class="w-full" maxlength="120" /></UFormField>
-        <UFormField :label="t('content.f_description')"><UTextarea v-model="f.description" :rows="3" class="w-full" /></UFormField>
+        <UFormField :label="t('content.f_description')"><ConfigsContentRichText v-model="f.description" compact /></UFormField>
         <div class="grid gap-3 sm:grid-cols-2">
           <UFormField :label="t('content.f_topic')"><UInput v-model="f.topic" class="w-full" maxlength="200" /></UFormField>
           <UFormField :label="t('content.f_manager')"><UInput v-model="f.manager" class="w-full" maxlength="120" /></UFormField>

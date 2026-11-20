@@ -26,6 +26,18 @@ export const CM_COLORS = ['#0d9488', '#6366f1', '#f59e0b', '#ef4444', '#0ea5e9',
 export const CM_SEVERITY_COLOR: Record<string, string> = { bad: '#ef4444', warn: '#f59e0b', info: '#6366f1' }
 export const CM_ROLES = ['editor', 'author', 'approver', 'viewer'] as const
 
+/** Markdown → простой текст для превью в списках (без разметки и ссылок-обёрток). */
+export function cmPlain(md: string | null | undefined): string {
+  return (md || '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^\s{0,3}(#{1,6}|>|[-*+]|\d+\.)\s+/gm, '')
+    .replace(/\\([\\`*_{}[\]()#+.!>~-])/g, '$1')
+    .replace(/(\*\*|__|~~|\*|_|`)/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 /** Общий стиль нативных select/input в формах (как в configs/appointments). */
 export const CM_FIELD = 'h-9 w-full rounded-lg border border-default bg-default px-3 text-sm'
 

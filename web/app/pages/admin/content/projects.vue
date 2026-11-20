@@ -57,7 +57,7 @@ async function removePlatform(pf: CmPlatform) {
               <UButton size="xs" color="error" variant="outline" :label="t('content.delete')" @click="removeProject" />
             </span>
           </h3>
-          <p v-if="current.description" class="mb-3 text-sm text-muted">{{ current.description }}</p>
+          <p v-if="current.description" class="mb-3 text-sm text-muted">{{ cmPlain(current.description) }}</p>
           <dl class="grid gap-x-3.5 gap-y-1.5 text-sm sm:grid-cols-[130px_minmax(0,1fr)]">
             <template v-for="[k, v] in facts(current)" :key="k"><dt class="text-muted">{{ t('content.' + k) }}</dt><dd>{{ v }}</dd></template>
           </dl>

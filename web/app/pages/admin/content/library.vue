@@ -77,7 +77,7 @@ const bookColor = (s?: string | null) => s === 'best' ? '#f59e0b' : s === 'read'
               <UBadge v-if="['audience', 'hashtags'].includes(m.kind) && m.sphere" variant="subtle" color="neutral" :style="{ color: CM_SPHERE_COLOR[m.sphere] }" :label="t('content.sphere_' + m.sphere)" />
             </div>
             <div class="text-xs text-muted">{{ [m.entry_date ? cmDayTitle(locale, m.entry_date) : '', m.topic ? (m.kind === 'book' ? '✍ ' : '# ') + m.topic : ''].filter(Boolean).join(' · ') }}</div>
-            <p v-if="m.body" class="whitespace-pre-wrap text-sm text-muted">{{ m.body.length > 260 ? m.body.slice(0, 260) + '…' : m.body }}</p>
+            <p v-if="m.body" class="whitespace-pre-wrap text-sm text-muted">{{ cmPlain(m.body).length > 260 ? cmPlain(m.body).slice(0, 260) + '…' : cmPlain(m.body) }}</p>
             <div class="mt-auto flex flex-wrap gap-2 pt-1">
               <UButton v-if="['idea', 'case'].includes(m.kind) && ws.canWrite.value" size="xs" color="neutral" variant="outline" :label="'→ ' + t('content.make_pub')" @click="openPub(null, { title: m.title, body: m.body || '' })" />
               <UButton v-if="m.kind === 'hashtags'" size="xs" color="neutral" variant="outline" :label="t('content.copy')" @click="copy(m)" />

@@ -106,7 +106,7 @@ async function acceptAll() {
             <div class="min-w-0 flex-1">
               <b class="block font-semibold text-highlighted">{{ p.title }}</b>
               <span class="text-xs text-muted">{{ [t('content.kind_' + (p.kind || 'post')), p.rubric, p.planned_date ? cmDayTitle(locale, p.planned_date) + (p.planned_time ? ' ' + p.planned_time : '') : ''].filter(Boolean).join(' · ') }}</span>
-              <p v-if="p.body" class="mt-1 whitespace-pre-wrap text-sm text-muted">{{ p.body.length > 220 ? p.body.slice(0, 220) + '…' : p.body }}</p>
+              <p v-if="p.body" class="mt-1 whitespace-pre-wrap text-sm text-muted">{{ cmPlain(p.body).length > 220 ? cmPlain(p.body).slice(0, 220) + '…' : cmPlain(p.body) }}</p>
             </div>
             <UButton v-if="!p.saved" size="xs" icon="i-lucide-plus" :label="t('content.as_accept')" @click="accept(p)" />
             <UBadge v-else variant="subtle" color="success" :label="t('content.as_added')" />

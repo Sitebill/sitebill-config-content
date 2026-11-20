@@ -233,7 +233,7 @@ async function acceptProposal() {
         />
 
         <UFormField :label="`${t('content.f_body')} · ${f.body.length}`">
-          <UTextarea v-model="f.body" :rows="8" class="w-full" :disabled="readonly" />
+          <ConfigsContentRichText v-model="f.body" :disabled="readonly" />
         </UFormField>
 
         <div class="grid gap-3 sm:grid-cols-2">
@@ -308,7 +308,7 @@ async function acceptProposal() {
         <p v-if="proposalFor && !proposal" class="mt-2 text-sm text-muted">{{ t('content.thinking') }}</p>
         <div v-if="proposal" class="mt-3 space-y-2 rounded-xl border border-dashed border-default bg-elevated/40 p-3">
           <b class="block text-highlighted">{{ proposalFor?.name }} — {{ proposal.title }}</b>
-          <pre class="max-h-36 overflow-auto whitespace-pre-wrap font-sans text-sm text-muted">{{ proposal.body }}</pre>
+          <pre class="max-h-36 overflow-auto whitespace-pre-wrap font-sans text-sm text-muted">{{ cmPlain(proposal.body) }}</pre>
           <div class="flex gap-2">
             <UButton size="xs" :label="t('content.adapt_save')" @click="acceptProposal" />
             <UButton size="xs" color="neutral" variant="outline" :label="t('content.cancel')" @click="proposal = null; proposalFor = null" />
