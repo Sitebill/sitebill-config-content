@@ -196,3 +196,48 @@ test('аудитория из библиотеки: в бренд-память �
         return str_contains($body, 'Работа: владельцы квартир (') && str_contains($body, '28–45 лет') && str_contains($body, 'Своя аудитория') && ! str_contains($body, '**');
     });
 });
+
+test('боли аудитории: сохраняются JSON-ом, у публикации лишние боли отсекаются, в промпт идут отмеченные боли и вопросы', function () {
+    $admin = contentAiAdmin($this, 'Текст.');
+    $project = contentAiProject();
+
+    $pains = json_encode([
+        ['id' => 's1', 'title' => 'Боли частных риелторов', 'pains' => [
+            ['id' => 'p1', 'title' => 'Нет потока клиентов', 'description' => 'Зависят от рекомендаций'],
+            ['id' => 'p2', 'title' => 'Ручная рутина', 'description' => 'Публикации на 5 площадках'],
+            ['title' => '', 'description' => ''],
+        ], 'questions' => [['id' => 'q1', 'question' => 'Сколько стоит?', 'answer' => 'От 990 в месяц']]],
+        ['id' => 's2', 'title' => 'Зависимость от площадок', 'pains' => [['id' => 'p3', 'title' => 'Блокировки', 'description' => 'Аккаунт могут закрыть']], 'questions' => [['id' => 'q2', 'question' => 'Другой раздел?', 'answer' => 'НЕ ДОЛЖНО ПОПАСТЬ']]],
+    ], JSON_UNESCAPED_UNICODE);
+
+    $saved = contentAs($this, $admin, 'mutation ($i: ContentMaterialInput!) { contentSaveMaterial(input: $i) { id pains } }', ['i' => ['kind' => 'audience', 'title' => 'Риелторы', 'pains' => $pains]])
+        ->assertGraphQLErrorFree()->json('data.contentSaveMaterial');
+    $stored = json_decode($saved['pains'], true);
+    expect($stored)->toHaveCount(2)->and($stored[0]['pains'])->toHaveCount(2)->and($stored[0]['pains'][1]['id'])->toBe('p2');
+
+    // чужой вид материала pains не хранит
+    $note = contentAs($this, $admin, 'mutation ($i: ContentMaterialInput!) { contentSaveMaterial(input: $i) { pains } }', ['i' => ['kind' => 'note', 'title' => 'Н', 'pains' => $pains]])
+        ->assertGraphQLErrorFree()->json('data.contentSaveMaterial.pains');
+    expect($note)->toBeNull();
+
+    $pub = contentAs($this, $admin, 'mutation ($i: ContentPublicationInput!) { contentSavePublication(input: $i) { id audience_id pain_ids } }', ['i' => [
+        'project_id' => $project->id, 'title' => 'Пост', 'audience_id' => (int) $saved['id'], 'pain_ids' => ['p1', 'p3', 'нет-такой'],
+    ]])->assertGraphQLErrorFree()->json('data.contentSavePublication');
+    expect($pub['audience_id'])->toBe((int) $saved['id'])->and($pub['pain_ids'])->toBe(['p1', 'p3']);
+
+    contentAs($this, $admin, 'mutation ($i: ContentAiInput!) { contentAiGenerate(input: $i) { text } }', ['i' => [
+        'action' => 'draft', 'project_id' => $project->id, 'title' => 'Т', 'audience_id' => (int) $saved['id'], 'pain_ids' => ['p1'],
+    ]])->assertGraphQLErrorFree();
+    Http::assertSent(function ($r) {
+        $b = json_encode($r->data(), JSON_UNESCAPED_UNICODE);
+
+        return str_contains($b, 'БОЛИ АУДИТОРИИ') && str_contains($b, 'Нет потока клиентов') && str_contains($b, 'От 990 в месяц')
+            && ! str_contains($b, 'Ручная рутина') && ! str_contains($b, 'НЕ ДОЛЖНО ПОПАСТЬ');
+    });
+
+    // смена аудитории на пустую сбрасывает боли
+    $cleared = contentAs($this, $admin, 'mutation ($id: ID, $i: ContentPublicationInput!) { contentSavePublication(id: $id, input: $i) { audience_id pain_ids } }', ['id' => $pub['id'], 'i' => [
+        'project_id' => $project->id, 'title' => 'Пост', 'audience_id' => null, 'pain_ids' => ['p1'],
+    ]])->assertGraphQLErrorFree()->json('data.contentSavePublication');
+    expect($cleared['audience_id'])->toBeNull()->and($cleared['pain_ids'])->toBe([]);
+});

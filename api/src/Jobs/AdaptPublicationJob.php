@@ -9,6 +9,7 @@ use App\Configs\Content\Models\Platform;
 use App\Configs\Content\Models\Project;
 use App\Configs\Content\Models\Publication;
 use App\Configs\Content\Services\Ai\AdaptFeature;
+use App\Configs\Content\Services\AudiencePains;
 use App\Configs\Content\Support\BatchProgress;
 use App\Models\Tenant;
 use App\Models\User;
@@ -61,12 +62,14 @@ class AdaptPublicationJob implements ShouldQueue
                 'project' => Project::query()->find($pub->project_id)?->only(['name', 'topic', 'audience', 'tone', 'keywords', 'competitors']) ?? [],
                 'platform' => $platform->only(['name', 'kind', 'formats', 'audience', 'max_length']),
                 'title' => $pub->title, 'kind' => $pub->kind, 'rubric' => $pub->rubric, 'text' => $pub->body, 'locale' => $this->locale,
+                'pains' => AudiencePains::forPrompt($pub->audience_id, (array) $pub->pain_ids),
             ]);
 
             $child = new Publication([
                 'project_id' => $pub->project_id, 'parent_id' => $pub->id, 'title' => $pub->title, 'kind' => $pub->kind, 'rubric' => $pub->rubric,
                 'sphere' => $pub->sphere, 'status' => 'draft', 'priority' => $pub->priority, 'planned_date' => $pub->planned_date,
                 'planned_time' => $pub->planned_time, 'body' => $text, 'hashtags' => $pub->hashtags,
+                'audience_id' => $pub->audience_id, 'pain_ids' => $pub->pain_ids,
             ]);
             $child->tenant_id = $tenant->id;
             $child->save();

@@ -3,12 +3,12 @@ import { gql } from '@apollo/client/core'
 // GraphQL-документы контент-фабрики (configs/content/api/graphql/content.graphql).
 // Мутации возвращают публикацию целиком (PUB_FIELDS), чтобы карточка обновлялась без перезагрузки.
 
-const PUB_FIELDS = `id project_id parent_id title kind rubric sphere status priority planned_date planned_time body hashtags link assignee comment placement_state placements { id platform_id status published_at url comment }`
+const PUB_FIELDS = `id project_id parent_id title kind rubric sphere status priority planned_date planned_time body hashtags link assignee comment audience_id pain_ids placement_state placements { id platform_id status published_at url comment }`
 
 export const CM_PROJECTS = gql`query CmProjects { contentProjects { id name description topic audience tone keywords competitors manager color } }`
 export const CM_PLATFORMS = gql`query CmPlatforms { contentPlatforms { id project_id name kind url audience formats max_length per_week api_status } }`
 export const CM_PUBLICATIONS = gql`query CmPublications { contentPublications(limit: 5000) { ${PUB_FIELDS} } }`
-export const CM_MATERIALS = gql`query CmMaterials { contentMaterials { id project_id kind entry_date state sphere topic title body tags } }`
+export const CM_MATERIALS = gql`query CmMaterials { contentMaterials { id project_id kind entry_date state sphere topic title body tags pains } }`
 export const CM_EVENTS = gql`query CmEvents { contentEvents { id kind title event_date event_time comment } }`
 export const CM_MY_ROLE = gql`query CmMyRole { contentMyRole }`
 export const CM_REVIEW = gql`query CmReview($project_id: Int, $today: String) { contentReview(project_id: $project_id, today: $today) { code severity publication_id meta } }`

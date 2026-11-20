@@ -35,6 +35,8 @@ const f = reactive({
   assignee: src.assignee || '',
   comment: src.comment || '',
   parent_id: (src.parent_id || d.parent_id || null) as number | null,
+  audience_id: String(src.audience_id || d.audience_id || ''),
+  pain_ids: [...(src.pain_ids || d.pain_ids || [])] as string[],
   platform_ids: (src.placements || []).map(p => Number(p.platform_id)).concat(src.id ? [] : (d.platform_ids || [])) as number[],
 })
 
@@ -56,6 +58,7 @@ function input() {
     rubric: f.rubric || null, sphere: f.sphere, status: f.status, priority: f.priority, planned_date: f.planned_date || null,
     planned_time: f.planned_time || null, body: f.body || null, hashtags: f.hashtags || null, link: f.link || null,
     assignee: f.assignee || null, comment: f.comment || null, platform_ids: f.platform_ids.map(Number),
+    audience_id: f.audience_id ? Number(f.audience_id) : null, pain_ids: f.audience_id ? f.pain_ids : [],
   }
 }
 
@@ -118,6 +121,7 @@ async function adaptAi(pf: CmPlatform) {
       input: {
         action: 'adapt', project_id: Number(f.project_id), platform_id: Number(pf.id), title: f.title, kind: f.kind, rubric: f.rubric || null,
         text: f.body, locale: String(locale.value).slice(0, 2),
+        audience_id: f.audience_id ? Number(f.audience_id) : null, pain_ids: f.audience_id ? f.pain_ids : [],
       },
     })
     proposal.value = {
@@ -168,6 +172,7 @@ async function acceptProposal() {
       project_id: Number(f.project_id), parent_id: Number(cur.value!.id), title: p.title, kind: p.kind, rubric: p.rubric, status: 'draft',
       priority: f.priority, planned_date: p.planned_date, planned_time: p.planned_time, body: p.body, hashtags: p.hashtags,
       link: f.link || null, assignee: f.assignee || null, platform_ids: p.platform_ids,
+      audience_id: f.audience_id ? Number(f.audience_id) : null, pain_ids: f.audience_id ? f.pain_ids : [],
     },
   }, 'content.version_created')
   if (data) { proposal.value = null; proposalFor.value = null }
@@ -227,8 +232,11 @@ async function acceptProposal() {
           <UFormField :label="t('content.f_assignee')"><input v-model="f.assignee" maxlength="120" :class="CM_FIELD" :disabled="readonly"></UFormField>
         </div>
 
+        <ConfigsContentPainPicker v-model:audience="f.audience_id" v-model:pains="f.pain_ids" :disabled="readonly" />
+
         <ConfigsContentAiPanel
           v-if="!readonly" :project-id="Number(f.project_id)" :title="f.title" :kind="f.kind" :rubric="f.rubric" :body="f.body"
+          :audience-id="f.audience_id ? Number(f.audience_id) : null" :pain-ids="f.audience_id ? f.pain_ids : []"
           :platforms="platforms" @apply="applyAi"
         />
 

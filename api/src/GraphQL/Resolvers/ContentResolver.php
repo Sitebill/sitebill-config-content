@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use App\Configs\Content\Models\Event;
 use App\Configs\Content\Models\Material;
+use App\Configs\Content\Services\AudiencePains;
 use App\Configs\Content\Models\Placement;
 use App\Configs\Content\Models\Platform;
 use App\Configs\Content\Models\Project;
@@ -46,7 +47,7 @@ final class ContentResolver
     {
         return Material::query()
             ->when(! empty($args['project_id']), fn ($q) => $q->where(fn ($w) => $w->where('project_id', $args['project_id'])->orWhereNull('project_id')))
-            ->orderByDesc('entry_date')->orderByDesc('id')->get()->map(fn (Material $m) => $this->plain($m))->all();
+            ->orderByDesc('entry_date')->orderByDesc('id')->get()->map(fn (Material $m) => $this->materialRow($m))->all();
     }
 
     public function events(): array
@@ -145,11 +146,17 @@ final class ContentResolver
         $this->guardStatus($in['status'] ?? null, 'input.status');
         $platformIds = $in['platform_ids'] ?? null;
         unset($in['platform_ids']);
+        // Аудитория и боли: боль, которой нет у выбранной аудитории, молча отбрасываем (аудиторию могли отредактировать).
+        if (array_key_exists('audience_id', $in) || array_key_exists('pain_ids', $in)) {
+            $aud = ! empty($in['audience_id']) ? Material::query()->where('kind', 'audience')->findOrFail($in['audience_id']) : null;
+            $in['audience_id'] = $aud?->id;
+            $in['pain_ids'] = $aud ? array_values(array_intersect($in['pain_ids'] ?? [], AudiencePains::painIds($aud->pains))) : [];
+        }
 
         $pub = ! empty($args['id']) ? Publication::query()->findOrFail($args['id']) : new Publication();
         $pub->fill(array_filter($in, fn ($v) => $v !== null) + ($pub->exists ? [] : ['status' => 'idea']))->save();
         // nullable fields can be cleared explicitly
-        foreach (['rubric', 'planned_date', 'planned_time', 'body', 'hashtags', 'link', 'assignee', 'comment'] as $f) {
+        foreach (['rubric', 'planned_date', 'planned_time', 'body', 'hashtags', 'link', 'assignee', 'comment', 'audience_id'] as $f) {
             if (array_key_exists($f, $in) && $in[$f] === null) {
                 $pub->{$f} = null;
             }
@@ -235,11 +242,14 @@ final class ContentResolver
             Project::query()->findOrFail($in['project_id']);
         }
         $m = ! empty($args['id']) ? Material::query()->findOrFail($args['id']) : new Material();
+        $pains = array_key_exists('pains', $in) ? AudiencePains::sanitize($in['pains']) : ($m->pains ?? null);
+        unset($in['pains']);
         $m->fill($in);
+        $m->pains = $in['kind'] === 'audience' ? $pains : null;
         $m->entry_date = $in['entry_date'] ?? ($m->entry_date ?: now()->toDateString());
         $m->save();
 
-        return $this->plain($m);
+        return $this->materialRow($m);
     }
 
     public function deleteMaterial(mixed $root, array $args): bool
@@ -318,6 +328,15 @@ final class ContentResolver
 
             return $row;
         })->all();
+    }
+
+    /** Боли отдаём JSON-строкой: структура свободная, клиент разбирает её сам. */
+    private function materialRow(Material $m): array
+    {
+        $row = $this->plain($m);
+        $row['pains'] = $m->pains ? json_encode($m->pains, JSON_UNESCAPED_UNICODE) : null;
+
+        return $row;
     }
 
     private function plain(\Illuminate\Database\Eloquent\Model $m): array

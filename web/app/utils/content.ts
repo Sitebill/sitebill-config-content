@@ -70,11 +70,22 @@ export interface CmPlacement { id: string; platform_id: number; status: string; 
 export interface CmPublication {
   id: string; project_id: number; parent_id?: number | null; title: string; kind: string; rubric?: string | null; sphere: string; status: string
   priority: string; planned_date?: string | null; planned_time?: string | null; body?: string | null; hashtags?: string | null; link?: string | null
-  assignee?: string | null; comment?: string | null; placement_state: string; placements: CmPlacement[]
+  assignee?: string | null; comment?: string | null; audience_id?: number | null; pain_ids?: string[] | null; placement_state: string; placements: CmPlacement[]
 }
 export interface CmProject { id: string; name: string; description?: string | null; topic?: string | null; audience?: string | null; tone?: string | null; keywords?: string | null; competitors?: string | null; manager?: string | null; color: string }
 export interface CmPlatform { id: string; project_id: number; name: string; kind: string; url?: string | null; audience?: string | null; formats?: string | null; max_length?: number | null; per_week?: number | null; api_status: string }
-export interface CmMaterial { id: string; project_id?: number | null; kind: string; entry_date?: string | null; state?: string | null; sphere?: string | null; topic?: string | null; title: string; body?: string | null; tags?: string | null }
+export interface CmMaterial { id: string; project_id?: number | null; kind: string; entry_date?: string | null; state?: string | null; sphere?: string | null; topic?: string | null; title: string; body?: string | null; tags?: string | null; pains?: string | null }
+/** «Боли аудитории»: разделы с таблицами «вид боли — описание» и «вопрос — ответ». */
+export interface CmPainSection { id: string; title: string; pains: { id: string; title: string; description: string }[]; questions: { id: string; question: string; answer: string }[] }
+
+/** JSON из GraphQL → изменяемые разделы (результаты Apollo заморожены, править их нельзя). */
+export function cmParsePains(json: string | null | undefined): CmPainSection[] {
+  try {
+    const a = json ? JSON.parse(json) : []
+    return Array.isArray(a) ? a : []
+  } catch { return [] }
+}
+
 export interface CmEvent { id: string; kind: string; title: string; event_date: string; event_time?: string | null; comment?: string | null }
 export interface CmReviewItem { code: string; severity: string; publication_id?: number | null; meta?: string | null }
 export interface CmProposal { title: string; kind: string; rubric?: string | null; body?: string | null; hashtags?: string | null; planned_date?: string | null; planned_time?: string | null; platform_ids: number[] }

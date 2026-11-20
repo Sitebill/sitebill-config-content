@@ -66,6 +66,9 @@ type ContentPublication {
     link: String
     assignee: String
     comment: String
+    "Target audience of the library (material of kind audience) and the pains of it this text answers."
+    audience_id: Int
+    pain_ids: [String!]
     placements: [ContentPlacement!]!
     "Computed from the placements: none | pending | partial | done"
     placement_state: String!
@@ -87,6 +90,8 @@ type ContentMaterial {
     title: String!
     body: String
     tags: String
+    "audience only: JSON string [{id,title,pains:[{id,title,description}],questions:[{id,question,answer}]}]."
+    pains: String
 }
 
 "An important date of the owner: birthday, holiday, doctor appointment, other."
@@ -165,6 +170,8 @@ input ContentPublicationInput {
     link: String @rules(apply: ["nullable", "max:500"])
     assignee: String @rules(apply: ["nullable", "max:120"])
     comment: String @rules(apply: ["nullable", "max:2000"])
+    audience_id: Int @rules(apply: ["nullable", "integer"])
+    pain_ids: [String!]
     "Channels to publish to; missing placements are created, removed ones are deleted only when not yet published."
     platform_ids: [Int!]
 }
@@ -187,6 +194,8 @@ input ContentMaterialInput {
     title: String! @rules(apply: ["required", "max:200"])
     body: String @rules(apply: ["nullable", "max:50000"])
     tags: String @rules(apply: ["nullable", "max:200"])
+    "audience only: JSON string of sections, see ContentMaterial.pains."
+    pains: String @rules(apply: ["nullable", "max:300000"])
 }
 
 "A member of the content team. The site admin is always the owner and is not listed here."
@@ -317,6 +326,9 @@ input ContentAiInput {
     "Wishes or theses of the user."
     instruction: String @rules(apply: ["nullable", "max:1000"])
     locale: String @rules(apply: ["nullable", "in:ru,en,sr,tg"])
+    "Audience and its pains the text must answer (taken into the prompt)."
+    audience_id: Int @rules(apply: ["nullable", "integer"])
+    pain_ids: [String!]
 }
 
 extend type Mutation {

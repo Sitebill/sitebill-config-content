@@ -7,6 +7,7 @@ use App\Configs\Content\Models\Event;
 use App\Configs\Content\Models\Platform;
 use App\Configs\Content\Models\Project;
 use App\Configs\Content\Models\Publication;
+use App\Configs\Content\Services\AudiencePains;
 use App\Configs\Content\Services\Ai\AdaptFeature;
 use App\Configs\Content\Services\Ai\ContentFeature;
 use App\Configs\Content\Services\Ai\DraftFeature;
@@ -63,6 +64,7 @@ final class AiResolver
             'platform' => $platform?->only(['name', 'kind', 'formats', 'audience', 'max_length']),
             'title' => $in['title'] ?? null, 'kind' => $in['kind'] ?? null, 'rubric' => $in['rubric'] ?? null,
             'text' => $in['text'] ?? null, 'instruction' => $in['instruction'] ?? null,
+            'pains' => AudiencePains::forPrompt($in['audience_id'] ?? null, $in['pain_ids'] ?? []),
             'locale' => $in['locale'] ?? app('currentTenant')->default_locale ?? 'ru',
         ];
 

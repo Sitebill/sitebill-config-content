@@ -11,5 +11,7 @@ class Material extends Model
 
     protected $table = 'content_materials';
 
-    protected $fillable = ['project_id', 'kind', 'entry_date', 'state', 'sphere', 'topic', 'title', 'body', 'tags'];
+    protected $fillable = ['project_id', 'kind', 'entry_date', 'state', 'sphere', 'topic', 'title', 'body', 'tags', 'pains'];
+
+    protected $casts = ['pains' => 'array'];
 }

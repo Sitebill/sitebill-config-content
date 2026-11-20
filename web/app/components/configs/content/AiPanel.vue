@@ -13,6 +13,8 @@ const props = defineProps<{
   kind: string
   rubric: string
   body: string
+  audienceId?: number | null
+  painIds?: string[]
   platforms: CmPlatform[]
 }>()
 const emit = defineEmits<{ apply: [patch: { title?: string; body?: string; hashtags?: string }] }>()
@@ -46,6 +48,7 @@ async function run(action: 'draft' | 'rewrite' | 'titles' | 'hashtags') {
         action, project_id: props.projectId, platform_id: platformId.value ? Number(platformId.value) : null,
         title: props.title || null, kind: props.kind || null, rubric: props.rubric || null,
         text: props.body || null, instruction: wish || null, locale: String(locale.value).slice(0, 2),
+        audience_id: props.audienceId || null, pain_ids: props.audienceId ? props.painIds || [] : [],
       },
     })
     result.value = { action, ...res.contentAiGenerate }
