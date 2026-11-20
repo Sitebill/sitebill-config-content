@@ -18,7 +18,7 @@ final class DraftFeature extends ContentFeature
 
     protected function answerFormat(): string
     {
-        return 'Ответь ТОЛЬКО готовым текстом простыми абзацами (без markdown, без заголовка, без пояснений и вариантов на выбор).';
+        return 'Ответь ТОЛЬКО готовым текстом простыми абзацами (без markdown, без заголовка, без пояснений и вариантов на выбор).' . $this->hashtagsRule();
     }
 
     protected function userBlocks(array $input): array
@@ -28,7 +28,7 @@ final class DraftFeature extends ContentFeature
 
     public function postProcess(string $raw, array $input): string
     {
-        return PlatformHints::fit($this->clean($raw), $input['platform'] ?? []);
+        return $this->bodyWithHashtags($raw, $input);
     }
 
     public function maxTokens(): int

@@ -77,6 +77,14 @@ async function copyPrompt() {
     useToast().add({ title: t('content.ai_prompt_copy_failed'), color: 'warning' })
   }
 }
+async function copyHashtags() {
+  try {
+    await navigator.clipboard.writeText(result.value!.items.join(' '))
+    useToast().add({ title: t('content.ai_hashtags_copied'), color: 'success' })
+  } catch {
+    useToast().add({ title: t('content.ai_prompt_copy_failed'), color: 'warning' })
+  }
+}
 function applyTitle(title: string) { emit('apply', { title }); result.value = null }
 function applyHashtags() { emit('apply', { hashtags: result.value!.items.join(' ') }); result.value = null }
 </script>
@@ -132,7 +140,12 @@ function applyHashtags() { emit('apply', { hashtags: result.value!.items.join(' 
             <UButton size="xs" icon="i-lucide-copy" :label="t('content.ai_prompt_copy')" @click="copyPrompt" />
             <span class="text-xs text-muted">{{ t('content.ai_prompt_hint') }}</span>
           </div>
-          <div v-else class="flex flex-wrap gap-2">
+          <div v-if="result.action !== 'prompt' && result.items.length" class="flex flex-wrap items-center gap-2 rounded-lg bg-elevated/60 px-3 py-2">
+            <span class="min-w-0 flex-1 break-words text-sm">{{ result.items.join(' ') }}</span>
+            <UButton size="xs" color="neutral" variant="outline" icon="i-lucide-copy" :label="t('content.ai_hashtags_copy')" @click="copyHashtags" />
+            <UButton size="xs" color="neutral" variant="outline" icon="i-lucide-hash" :label="t('content.ai_apply')" @click="emit('apply', { hashtags: result!.items.join(' ') })" />
+          </div>
+          <div v-if="result.action !== 'prompt'" class="flex flex-wrap gap-2">
             <UButton size="xs" :label="t('content.ai_replace')" @click="applyText('replace')" />
             <UButton v-if="body" size="xs" color="neutral" variant="outline" :label="t('content.ai_append')" @click="applyText('append')" />
           </div>

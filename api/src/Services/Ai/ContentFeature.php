@@ -152,6 +152,39 @@ abstract class ContentFeature implements AiFeature
         return $text !== '' ? "{$title}:\n" . mb_substr($text, 0, 12000) : '';
     }
 
+    private const TAGS_MARK = 'ХЕШТЕГИ:';
+
+    /** Просьба в конце формата ответа: после текста — строка с хештегами, чтобы их можно было сразу скопировать. */
+    protected function hashtagsRule(): string
+    {
+        return ' После текста с новой строки напиши «' . self::TAGS_MARK . '» и 5–8 хештегов через пробел, каждый с «#».';
+    }
+
+    /** Текст и хештеги из ответа модели: тело чистится и подгоняется под площадку, хештеги возвращаются отдельной строкой. */
+    protected function bodyWithHashtags(string $raw, array $input): string
+    {
+        $tags = '';
+        if (preg_match('/^(.*?)\s*' . self::TAGS_MARK . '\s*(.*)$/usi', $raw, $m)) {
+            $raw = $m[1];
+            preg_match_all('/#[\p{L}\p{N}_]+/u', $m[2], $t);
+            $tags = implode(' ', array_slice(array_values(array_unique($t[0])), 0, 10));
+        }
+        $body = PlatformHints::fit($this->clean($raw), $input['platform'] ?? []);
+
+        return $tags !== '' ? $body . "\n\n" . self::TAGS_MARK . ' ' . $tags : $body;
+    }
+
+    /** Обратное к bodyWithHashtags: [текст, [хештеги]]. */
+    public static function splitHashtags(string $text): array
+    {
+        if (! preg_match('/^(.*?)\s*' . self::TAGS_MARK . '\s*(.*)$/us', $text, $m)) {
+            return [$text, []];
+        }
+        preg_match_all('/#[\p{L}\p{N}_]+/u', $m[2], $t);
+
+        return [$m[1], $t[0]];
+    }
+
     /** Убирает ограждения кода, markdown-разметку и обрамляющие кавычки; абзацы сохраняются. */
     protected function clean(string $raw): string
     {

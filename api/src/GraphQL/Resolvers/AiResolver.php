@@ -42,13 +42,28 @@ final class AiResolver
     {
         [$feature, $input, $action] = $this->prepare($args['input']);
         $text = $this->gateway->runFeature(app('currentTenant'), Auth::user(), $feature, $input);
+        // Черновик и переписывание заодно предлагают хештеги: они идут отдельно от текста, чтобы их можно было копировать.
+        $tags = [];
+        if (in_array($action, ['draft', 'rewrite'], true)) {
+            [$text, $tags] = ContentFeature::splitHashtags($text);
+            // Модель могла не дописать хештеги (слабые локальные модели часто игнорируют это) — добираем коротким запросом;
+            // ошибка здесь не должна терять уже готовый текст.
+            if (! $tags && trim($text) !== '') {
+                try {
+                    $raw = $this->gateway->runFeature(app('currentTenant'), Auth::user(), app(HashtagsFeature::class), array_merge($input, ['text' => $text]));
+                    $tags = array_values(array_filter(explode(' ', $raw)));
+                } catch (\Throwable) {
+                    $tags = [];
+                }
+            }
+        }
 
         return [
             'text' => $text,
             'items' => match ($action) {
                 'titles' => TitlesFeature::lines($text, 8),
                 'hashtags' => array_values(array_filter(explode(' ', $text))),
-                default => [],
+                default => $tags,
             },
         ];
     }

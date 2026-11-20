@@ -417,6 +417,8 @@
     "ai_prompt_copied": "Prompt je kopiran",
     "ai_prompt_copy_failed": "Kopiranje nije uspelo, označite tekst ručno",
     "ai_prompt_hint": "Nalepite u bilo koji čet-bot: memorija brenda, problemi publike i vaše želje su već unutra.",
-    "ai_prompt_still": "Prompt za drugi čet-bot možete dobiti i ovako."
+    "ai_prompt_still": "Prompt za drugi čet-bot možete dobiti i ovako.",
+    "ai_hashtags_copy": "Kopiraj heštegove",
+    "ai_hashtags_copied": "Heštegovi su kopirani"
   }
 }

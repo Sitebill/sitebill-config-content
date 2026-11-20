@@ -417,6 +417,8 @@
     "ai_prompt_copied": "Prompt copied",
     "ai_prompt_copy_failed": "Could not copy, select the text manually",
     "ai_prompt_hint": "Paste it into any chatbot: the project brand memory, audience pains and your wishes are already inside.",
-    "ai_prompt_still": "You can still get a prompt for another chatbot."
+    "ai_prompt_still": "You can still get a prompt for another chatbot.",
+    "ai_hashtags_copy": "Copy hashtags",
+    "ai_hashtags_copied": "Hashtags copied"
   }
 }

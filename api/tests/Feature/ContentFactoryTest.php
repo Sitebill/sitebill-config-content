@@ -260,3 +260,13 @@ test('готовый промпт: без вызова модели и без п
     // как и в генерации, переписать без текста нельзя
     contentAs($this, $admin, 'mutation ($i: ContentAiInput!) { contentAiPrompt(input: $i) }', ['i' => ['action' => 'rewrite', 'project_id' => $project->id]])->assertJsonPath('errors.0.message', fn ($m) => $m !== null);
 });
+
+test('черновик: хештеги отделяются от текста и приходят в items, «#» не вычищается', function () {
+    $admin = contentAiAdmin($this, "Первый абзац.\n\nВторой абзац.\n\nХЕШТЕГИ: #ремонт #дизайн_интерьера #свет #ремонт");
+    $project = contentAiProject();
+
+    $r = contentAs($this, $admin, 'mutation ($i: ContentAiInput!) { contentAiGenerate(input: $i) { text items } }', ['i' => ['action' => 'draft', 'project_id' => $project->id, 'title' => 'Т']])
+        ->assertGraphQLErrorFree()->json('data.contentAiGenerate');
+
+    expect($r['text'])->toBe("Первый абзац.\n\nВторой абзац.")->and($r['items'])->toBe(['#ремонт', '#дизайн_интерьера', '#свет']);
+});

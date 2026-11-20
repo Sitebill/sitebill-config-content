@@ -18,7 +18,7 @@ final class RewriteFeature extends ContentFeature
 
     protected function answerFormat(): string
     {
-        return 'Ответь ТОЛЬКО готовым текстом (без markdown, без пояснений и вариантов на выбор).';
+        return 'Ответь ТОЛЬКО готовым текстом (без markdown, без пояснений и вариантов на выбор).' . $this->hashtagsRule();
     }
 
     protected function userBlocks(array $input): array
@@ -28,6 +28,6 @@ final class RewriteFeature extends ContentFeature
 
     public function postProcess(string $raw, array $input): string
     {
-        return PlatformHints::fit($this->clean($raw), $input['platform'] ?? []);
+        return $this->bodyWithHashtags($raw, $input);
     }
 }
