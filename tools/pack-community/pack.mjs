@@ -69,6 +69,7 @@ const manifest = {
   provider: 'SitebillApps\\Rumantic\\ContentManager\\ContentManagerServiceProvider',
   permissions: [],
   profiles: ['blank'],
+  demo: { command: 'cm:seed-demo' },
   shell: {
     mode: 'owner',
     home: 'ContentHome',
